@@ -1,2 +1,3 @@
-# dataanalysis3fs
-Repo for the practicals of the data analysis course
+# Practicals Data Analysis 3. FS  MoBi
+
+Repo for the practicals of the data analysis course.
