@@ -1,0 +1,437 @@
+---
+title: "Exercise Sheet 06: hypothesis testing"
+author: "Carl Herrmann, Maïwen Caudron-Herger"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r knitr_init, echo=FALSE, cache=FALSE}
+library(knitr)
+library(rmdformats)
+## Global options
+options(max.print="120")
+opts_chunk$set(echo=TRUE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=120)
+opts_knit$set(root.dir  = "~/")
+```
+
+# 0. Recap of the previous sheet
+
+In the last two exercises sheets you learnt about different major types of probability distributions like Normal, Binomial, Negative binomial, Student t etc.
+You have also gained pratical experience with the central limit theorem and the confidence intervals.
+
+# 1. Introduction and objectives
+
+In this exercises sheet you will start to see how to formulate hypotheses and how to test them.
+We want to learn how to use and interpret hypothesis tests.
+We will mainly focus on test on **mean values**
+
+# 2. First statistical test
+
+We will work again on the ALL/AML expression dataset that we worked on for the exploratory data analysis.
+We cleaned up the dataset to remove extreme values, and to include gene symbols for better interpretation of the results.
+
+```{r}
+all.aml = read.delim('http://bioinfo.ipmb.uni-heidelberg.de/crg/datascience3fs/practicals/data/all.aml.cleaned.csv',header=TRUE)
+all.aml.anno = read.delim("http://bioinfo.ipmb.uni-heidelberg.de/crg/datascience3fs/practicals/data/all.aml.anno.cleaned.csv", header=TRUE)
+#
+# We convert all.aml into a data matrix rather than a data.frame
+all.aml = data.matrix(all.aml)
+```
+
+We first check how the values are distributed for a gene across all the samples (= patients).
+For that, we take a random gene, and plot the histogram of the values across the samples.
+You should run this code several times, as at each run, another random gene is chosen!
+
+```{r}
+# Sample a random line from the expression table
+i = sample(1:nrow(all.aml),1)
+#
+# Plot the histogram
+hist(all.aml[i,],
+     main=rownames(all.aml)[i],
+     col='lightblue',
+     breaks=20, 
+     xlab = "Expression level")
+```
+
+We can now verify the **normality** of the distribution using a QQ-plot
+
+```{r}
+# Sample a random line from the expression table
+i = sample(1:nrow(all.aml),1)
+#
+# Plot the histogram
+qqnorm(all.aml[i,],main=rownames(all.aml)[i]); qqline(all.aml[i,])
+```
+
+If the data is normally distributed, the dots representing the quantiles should lie on the straight line.
+Here again, run the code several times, and check the QQ-plot for several random genes!
+
+> Search for the line corresponding to the gene TP53 using the `grep` function (check the help!) inside the vector of row names `rownames(all.aml)` and check the normality of the distribution for this important oncogene.
+
+```{r}
+# Get the line for the gene TP53 using the function grep()
+i.tp53 <- grep("TP53",row.names(all.aml))
+# line 438
+#
+# Check the normality of the distribution
+qqnorm(all.aml[i.tp53,],main=rownames(all.aml)[i.tp53]); qqline(all.aml[i.tp53,])
+```
+
+> The QQ-plot is a usefull tool to visually inspect the normality.
+> However, it does not give a quantitative measure of the normality!\
+> We will see later on how we can determine in a more quantitative manner the normality of the data.
+
+------------------------------------------------------------------------
+
+#### Exercise set A
+
+1.  Select a gene randomly and calculate the mean expression and standard deviation (sigma) for the first and second half of the patients separately.
+
+2.  Do the means lie within a 3 sigma interval (two sided) from each other?
+    Or outside?
+
+------------------------------------------------------------------------
+
+Now, we want to use a statistical test to check if, for a given gene,
+
+-   there is a significant difference in the mean expression of this gene between two groups (for example ALL vs AML, 2-sample test); or
+-   this gene has an expression which is significantly above a certain value (1-sample test)
+
+This is exactly what **mean tests** such as the t-test (or the Wilcoxon tests) are designed for!
+We will perform here a t-test.
+
+## Two-sample t-test
+
+We will now compare the expression of certain genes between ALL and AML patients.
+For a gene X, the question is:
+
+*Is there a significance difference in expression of gene X between ALL and AML patients?*
+
+> Formulate the $H_0$ hypothesis in this case!
+> Take the gene EIF4B as an example, an let us check if there is a significant different in gene expression between the 2 groups.
+
+```{r}
+# Get the column numbers of the ALL patients
+i.all = grep('ALL', all.aml.anno$ALL.AML)
+#
+# Find the line number of the gene EIF4B
+i.gene = grep('EIF4B',rownames(all.aml))
+#
+# Now, let us plot the expression in the 2 groups
+boxplot(list(ALL=all.aml[i.gene,i.all],AML=all.aml[i.gene,-i.all]),
+        main=rownames(all.aml)[i.gene])
+```
+
+> Does that look like a big expression difference?
+> Redo this analysis for the gene CCND3 and OS9.
+> What is your impression?
+
+```{r}
+# Find the line number of the gene CCND3
+i.gene = grep('CCND3',rownames(all.aml))
+#
+# Now, let us plot the expression in the 2 groups
+boxplot(list(ALL=all.aml[i.gene,i.all],AML=all.aml[i.gene,-i.all]),main=rownames(all.aml)[i.gene])
+```
+
+```{r}
+# Find the line number of the gene OS9
+i.gene = grep('OS9',rownames(all.aml))
+#
+# Now, let us plot the expression in the 2 groups
+boxplot(list(ALL=all.aml[i.gene,i.all],AML=all.aml[i.gene,-i.all]),main=rownames(all.aml)[i.gene])
+```
+
+> Now, let us perform a statistical test to check if the H0 hypothesis for each of these 3 genes is valid or not.
+
+-   Compute the t-value for a **2-sample** t.test for each of the genes
+
+```{r}
+# Find the line number of the gene EIF4B
+i.gene = grep('EIF4B',rownames(all.aml))
+#
+# Compute the t-value. Check the help for the function t.test().
+t.obs = t.test(all.aml[i.gene,i.all],all.aml[i.gene,-i.all])$statistic
+t.obs
+```
+
+**Is this a large value (in absolute)?** What value would be typically obtained if there were no difference (that is, if $H_0$ is true)?
+Let's have a look at this below!
+
+## One-sample t-test
+
+Using a one-sample t-test, we can check if values differ significantly from a target value.
+For example, you could sample 10 chocolate bars, and test if they significantly differ from the expected weight of 100g:
+
+```{r}
+bars = c(103,103,97,102.5,100.5,103,101.3,99.5,101,104)
+t.test(bars,mu = 100)
+```
+
+> How would you interpret this result?
+> Should we perform a one- or two-tailed test?
+
+**Beware not to get confused between one-/two-sample tests, and one-/two-tailed tests!!!**
+
+Here, we would like to check which genes are significantly more expressed than the average expression; hence, we will
+
+1.  for each gene, compute the average expression over all patients
+2.  compute the average of these average values (now over all genes), and obtain one number (e0).
+3.  we will perform a one-sample test over all genes, and compare their expression with the value e0.
+
+```{r}
+e0 = mean(apply(all.aml,1,mean))
+e0
+```
+
+------------------------------------------------------------------------
+
+#### Exercise set B
+
+1.  Perform a one-sample t-test for all genes, and test for significant deviation from the value e0.
+
+2.  Extract the list of significant genes!
+
+------------------------------------------------------------------------
+
+# 3. Checking the normality of the distribution
+
+In order to check whether the data is normally distributed or not, it is possible to perform a **Shapiro-Wilk** normality test (see lecture).
+This statistical test is implemented in R in the function **shapiro.test()**.
+
+Let's have a look at the normality of the genes in our dataset all.aml.
+
+First, we perform a Shapiro-Wilk test on the gene TP53, which we already tested before, using a QQ-plot.
+
+```{r}
+i.tp53 <- grep("TP53",row.names(all.aml))
+# line 438
+#
+# Check the normality of the distribution using a QQ-plot (Reminder)
+qqnorm(all.aml[i.tp53,],main=rownames(all.aml)[i.tp53]); qqline(all.aml[i.tp53,])
+#
+# Perform a Shapiro-Wilk test
+shapiro.test(all.aml[i.tp53,])
+# extract the p-value
+shapiro.test(all.aml[i.tp53,])$p.value
+# Reminder: for p-value >= 0.05, the data is normally distributed. For p-value < 0.05, the data is not normally distributed.
+```
+
+With a p-value = 0.2933688, the data for TP53 is normally distributed!
+
+> Determine which genes in our all.aml dataset are or not normally distributed.
+> Select a gene that is normally distributed according to the Shapiro-Wilk test and visualize its distribution using **both** a histogram and a QQ-plot.
+> Can you find a way to fit the histogram with a normal distribution?
+> (use the function dnorm or rnorm - determine the parameters you need first) Bonus question: how can I randomly obtain a QQ-plot for the genes which are normally distributed?
+
+We found that the gene MAPK3 and RING1 were normally distributed.
+Here are the gene expression values for these two genes:
+
+```{r}
+i.mapk3 <- grep("MAPK3",row.names(all.aml))
+hist(all.aml[i.mapk3,])
+qqnorm(all.aml[i.mapk3,],main=rownames(all.aml)[i.mapk3]); qqline(all.aml[i.mapk3,])
+#
+i.ring1 <- grep("RING1",row.names(all.aml))
+hist(all.aml[i.ring1,])
+qqnorm(all.aml[i.ring1,],main=rownames(all.aml)[i.ring1]); qqline(all.aml[i.ring1,])
+```
+
+Now that we know that the gene expression values are normally distributed, we can perform a statistical test and question whether the two genes are differentially expressed between ALL and AML patients (this we've done above already) or whether there is a difference between male and females etc ...
+
+```{r}
+# Check the annotation dataset
+head(all.aml.anno)
+# Let's find some differences
+# We already have i.mapk3 and i.ring1
+i.f <- grep('M', all.aml.anno$Gender)
+i.bm <- grep('BM', all.aml.anno$BM.PB)
+# Case 1:
+boxplot(list(Female=all.aml[i.mapk3,i.f],Male=all.aml[i.mapk3,-i.f]),main=rownames(all.aml)[i.mapk3])
+#
+# Case 2:
+boxplot(list(Female=all.aml[i.ring1,i.f],Male=all.aml[i.ring1,-i.f]),main=rownames(all.aml)[i.ring1])
+#
+# Case 3:
+boxplot(list(BoneM=all.aml[i.mapk3,i.bm],P_Blood=all.aml[i.mapk3,-i.bm]),main=rownames(all.aml)[i.mapk3])
+#
+# Case 4:
+boxplot(list(BoneM=all.aml[i.ring1,i.bm],P_Blood=all.aml[i.ring1,-i.bm]),main=rownames(all.aml)[i.ring1])
+```
+
+Let's consider the 1st case and check the mean values.
+
+```{r}
+mean(all.aml[i.mapk3,i.f])
+mean(all.aml[i.mapk3,-i.f])
+```
+
+Let's take the H0 hypothesis:\
+"The average expression levels of MAPK3 in female patients is equal to the average expression levels male patients."\
+\> What kind of t.test are we going to perform?
+
+```{r}
+var.diff <- ifelse(var.test(all.aml[i.mapk3,i.f],all.aml[i.mapk3,-i.f])$p.value < 0.05,TRUE,FALSE)
+t.test(all.aml[i.mapk3,i.f],all.aml[i.mapk3,-i.f],alternative = "two.sided", var.equal = var.diff)
+```
+
+> Can we reject the H0 hypothesis?
+
+------------------------------------------------------------------------
+
+#### Exercise set C
+
+This is the code needed to run the exercise without problem:
+
+```{r}
+all.aml = read.delim('http://bioinfo.ipmb.uni-heidelberg.de/crg/datascience3fs/practicals/data/all.aml.cleaned.csv',header=TRUE)
+all.aml.anno = read.delim("http://bioinfo.ipmb.uni-heidelberg.de/crg/datascience3fs/practicals/data/all.aml.anno.cleaned.csv", header=TRUE)
+#
+# We convert all.aml into a data matrix rather than a data.frame
+all.aml = data.matrix(all.aml)
+#
+i.mapk3 <- grep("MAPK3",row.names(all.aml))
+i.ring1 <- grep("RING1",row.names(all.aml))
+#
+# Case 2:
+boxplot(list(Female=all.aml[i.ring1,i.f],Male=all.aml[i.ring1,-i.f]),main=rownames(all.aml)[i.ring1])
+#
+# Case 3:
+boxplot(list(BoneM=all.aml[i.mapk3,i.bm],P_Blood=all.aml[i.mapk3,-i.bm]),main=rownames(all.aml)[i.mapk3])
+#
+# Case 4:
+boxplot(list(BoneM=all.aml[i.ring1,i.bm],P_Blood=all.aml[i.ring1,-i.bm]),main=rownames(all.aml)[i.ring1])
+```
+
+1)  For each case, formulate a H0 and H1 hypothesis and perform a t.test using the function t.test().
+
+2)  For those genes that are normally distributed, can you perform a differential expression analysis (i.e. a t.test) between ALL and AML patients?
+
+3)  Get the list of genes that are differentially expressed between ALL and AML.
+
+## 4. Extra insight: building the H0 distribution
+
+**Note: you can leave this part out...**
+
+The `t-test` is based on a theoretical distribution under the H0 hypothesis.
+We can however try to build this H0 distribution enpirically, using a sampling approach.
+
+Let's compute the t-value for EIF4B for 2 **randomly chosen** groups within the cohort.
+The rationale here: there is not reason why between 2 random groups, there should be a significant difference, right?
+
+We create 2 random groups of patients, each one having the size of the ALL / AML group
+
+```{r}
+# Sample random columns 
+i.randomALL  = sample(1:ncol(all.aml),length(i.all))
+#
+# Compute the t-test between the 2 random groups and get the t-value
+t.h0=t.test(all.aml[i.gene,i.randomALL],
+            all.aml[i.gene,-i.randomALL])$statistic
+t.h0
+```
+
+> repeat this several times to get various t-values over various random groups We can repeat this 10000 times over 10000 random splits of the cohorts
+
+```{r}
+t.values = sapply(1:10000,function(i) {
+  # random columns 
+  i.randomALL  = sample(1:ncol(all.aml),length(i.all))
+  #
+  # get t-value between the 2 random groups
+  t.test(all.aml[i.gene,i.randomALL],all.aml[i.gene,-i.randomALL])$statistic
+})
+#
+# Plot the histogram
+hist(t.values);abline(v=t.obs,lwd=3,col='red')
+```
+
+This distribution approximates the $H_0$ distribution of the test statistics.
+
+> What does the distribution look like??
+> Compute the mean and standard deviation of the t.values; plot a qq-plot
+
+```{r}
+mean(t.values)
+sd(t.values)
+qqnorm(t.values);qqline(t.values)
+```
+
+This is a standard normal distribution (actually, a t-distribution with degrees of freedom (df) equal to the number of patients -2)!\
+Do you remember why -2?
+
+We can overlay the **empirical** $H_0$ distribution that we have just determined with the **theoretical** $H_0$ distribution, which is a t-distribution with `r ncol(all.aml)-2` degrees of freedom.
+
+```{r}
+x = seq(-4,4,by=0.2)
+y = dt(x,df=ncol(all.aml)-2)
+hist(t.values,freq=FALSE);lines(x,y,type='l',col= 'red',lwd=3)
+```
+
+> Pretty close, no?
+
+## Computing the p-value
+
+We can place the value of the observed t-statistics between the **real** ALL and AML subgroups on this histogram:
+
+```{r}
+hist(t.values,xlim=c(-4,4));abline(v=t.obs,lty=3,lwd=4,col='red')
+```
+
+Since we are performing a 2-sided t-test here (remember the $H_0$ hypothesis formulation!), we have to check what the probability is to get **more extreme** t-values under $H_0$.
+
+> Check in how many of these 10000 random splits we get a t-value that is more extreme than the observed, hence : lower that -abs(t.obs) or larger than abs(t.obs).
+> Normalize this number to the 10000 random splits to obtain the p-value!
+
+```{r}
+p.value = sum(t.values < -abs(t.obs) | t.values > abs(t.obs))/length(t.values)
+p.value
+```
+
+Instead of using the empirical $H_0$ distribution, we can use the theoretical distribution (t-distribution):
+
+```{r}
+## Degrees of freedom df
+df = ncol(all.aml)-2
+##
+## this is the one-sided p-value for the upper tail test
+pt(t.obs, df = df, lower.tail=FALSE)
+##
+## this is the two-sided p-value
+2*pt(t.obs, df = df, lower.tail=FALSE)
+```
+
+Finally, we can compare these computed p-value with the p-value returned by the function `t.test`:
+
+```{r}
+# If var.equal is not specified, the default is var.equal = FALSE. See help for the function t.test()
+t.test(all.aml[i.gene,i.all],all.aml[i.gene,-i.all])
+# You can extract the p-value using $p.value
+t.test(all.aml[i.gene,i.all],all.aml[i.gene,-i.all])$p.value
+#
+# It is possible to evaluate the variance using the function var.test(). More about the underlying theory in the coming lectures!
+var.test(all.aml[i.gene,i.all],all.aml[i.gene,-i.all])
+# 
+## Now extract the p-value
+var.test(all.aml[i.gene,i.all],all.aml[i.gene,-i.all])$p.value
+#
+## This can be directly integrated into the t.test() using the function ifelse()
+t.test(all.aml[i.gene,i.all],
+       all.aml[i.gene,-i.all],
+       var.equal = ifelse(var.test(all.aml[i.gene,i.all],all.aml[i.gene,-i.all])$p.value < 0.05,FALSE,TRUE))
+```
+
+> Do you consider this to be significant?
+
+------------------------------------------------------------------------

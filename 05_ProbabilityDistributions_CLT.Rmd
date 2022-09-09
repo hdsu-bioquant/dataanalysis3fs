@@ -1,0 +1,284 @@
+---
+title: "Probability distribution, central limit theorem and confidence intervals"
+author: "Carl Herrmann, Maïwen Caudron-Herger"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r knitr_init, echo=FALSE, cache=FALSE}
+library(knitr)
+library(rmdformats)
+## Global options
+options(max.print="120")
+opts_chunk$set(echo=TRUE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=120)
+opts_knit$set(root.dir  = "~/")
+```
+
+# 0. Recap of the previous Sheet
+
+In the previous Exercise Sheet we have learnt about distributions and how to use them in R. We have learned about p-, q-, d- and r- functions, the normal and the poisson distribution.
+
+------------------------------------------------------------------------
+
+# 1. Introduction and Objectives
+
+In the previous lectures you learnt about different major types of probability distributions like Normal, Binomial, Negative binomial, Student t etc. In this tutorial you will complete your training with distribution by learning more about the binomial distribution and we will play around with the central limit theorem and the confidence intervals.
+
+------------------------------------------------------------------------
+
+#2. Binomial distribution
+
+A binomial distribution can be defined as -
+
+$$P(x) = \frac{n!}{x!(n-x)!}\cdot p^x \cdot (1-p)^{n-x}$$
+
+Where $x$ is the number of successes out of $n$ experiments and $p$ is the probability of success.
+
+-   $mean = n \cdot p$
+-   $variance = np \cdot (1 - p)$
+-   $sd = \sqrt{np \cdot (1 - p)}$
+
+The design of the experiment is as follows -
+
+-   The experiment is repeated and are independent of one another
+-   Each experiment has just two outcomes
+-   The probability of success is constant and does not change with experiments
+
+A real example would be coin toss -
+
+-   Flip a coin 100 times. Each of those flips are independent. One flip does not affect the result of another flip
+-   Outcomes is limited to heads or tails.
+-   The probability of success is constant - 0.5 on every trial.
+
+We can simulate the above coin flipping experiment as below and clearly see that the number of success peaks at 50.
+
+```{r fig.width=10}
+barplot(dbinom(0:100, prob = 0.5, size = 100), names.arg = 0:100, las=2, cex.names=0.5, cex.axis = 0.5)
+```
+
+#### Exercise set A
+
+1.  How large are the chances of getting at least 50 times head out of 100?
+
+2.  How would you simulate the effect of an unfair coin say which leads head 2/3 times? How large are the chances of getting at least 50 times head out of 100 with this coin?
+
+3.  A group of 9 friends meet every day at a bar, but not everyone is there on every day. For every member, there is an 80% chance that they will show up on any given day. If you are one of the friends and want to buy a treat for all of your other friends, how many should you buy to have a 90% chance that you will have just enough for everyone?
+
+------------------------------------------------------------------------
+
+# 3. Central limit theorem
+
+In this chapter, we will test the central limit theorem using the example of pipetting errors in the lab.\
+Imagine you have a set of three pipets made of a P2 (up to 2 µl), P10 and P200 pipets. You would like to test your pipets and check their accuracy. To do that, you weight drops of water corresponding to 2 µl with the P2, 5 µl with the P10 and 50 µl with the P200.\
+To proceed, you first consider samples of 1 measurement each. You perform 100 measurements.
+
+The results of such experiments can be simulated using a uniform distribution
+
+```{r}
+# Measurements with P2, varying between 1.5 µl and 2.5 µl
+P2.set1 <- lapply(1:100, function(x) {
+  runif(1,min = 1.5, max=2.5)
+})
+head(P2.set1)
+```
+
+Since each sample has one measurement, the mean of each sample is ... the measurement itself:
+
+```{r}
+P2.set1.mean = sapply(P2.set1,mean)
+P2.set1.mean
+```
+
+```{r}
+plot(density(P2.set1.mean), xlim = c(1.5,2.5),main='distribution of mean values')
+```
+
+We now repeat these measurements with 10 drops in each of the 100 samples
+
+```{r}
+N = 10
+P2.sets = lapply(1:100, function(x) {
+  runif(N,min = 1.5, max=2.5)
+})
+head(P2.sets)
+```
+
+And we calculate the mean of each sample set
+
+```{r}
+P2.mean <- sapply(P2.sets,mean)
+P2.mean
+```
+
+How are the mean values distributed?
+
+```{r}
+plot(density(P2.mean), xlim = c(1.8,2.2), main = 'Distribution of mean values')
+```
+
+Compare this distribution of means over samples with N=10 to the distribution of means over samples with N=1. What do you notice?
+
+> Well, this is not really clear. Right?
+> What about increasing the number of drops? Try with increasing numbers of drops.
+
+```{r}
+# Number of samples
+N = c(2,5,10,20,50,100,1000)
+
+lapply(N,function(n) {
+  P2.exp = lapply(1:100, function(x) {
+    runif(n,min = 1.5, max=2.5)
+  }) 
+  # Calculate the mean
+  P2.exp.mean = sapply(P2.exp,mean)
+  
+  # Plot the distribution of the means
+  plot(density(P2.exp.mean,bw=0.05), type='l',
+       xlab = "volume", main = paste("Sample mean for the P2, N =", n),xlim = c(1.6,2.4))
+})
+```
+
+> It starts to look a bit clearer, doesn't it? Which kind if distribution is it?
+
+We can have a look at the distribution of the mean values for increasing N.
+
+```{r}
+# Number of samples
+N <- 1:100 # Goes from 1 to 100
+#
+# Calculate the mean
+P2.exp.mean <- sapply(N,function(n) {
+  mean(sapply(1:100, function(y){
+    mean(runif(n,min = 1.5, max=2.5)) # to get 100 mean values for each N
+  }) )                                                   # to get the mean of the distribution
+})
+# Plot the distribution of the mean
+plot(P2.exp.mean, ylab = "Mean value for P2 with increasing N", ylim = c(1.8,2.2),xlab='Sample size');abline(h =2, col = "blue", lty = 2)
+```
+
+We can also have a look at the standard deviation.
+
+```{r}
+# Number of samples
+N <- 1:100 # Goes from 1 to 100
+#
+# Calculate the sd of the mean values (is actually the standard error!)
+P2.exp.se <- sapply(N,function(n) {
+  sd(sapply(1:100, function(y){
+    mean(runif(n,min = 1.5, max=2.5)) # to get 100 mean values for each N
+  }) )                                                   # to get the sd of the distribution (of the mean values)
+})
+# Plot the distribution of the mean
+plot(P2.exp.se, ylab = "SE value for P2",xlab = 'Sample size')
+```
+
+> What is the characteristics of these values? What is the main take home message?
+
+Now, we would like to find the parameters to fit the distribution of the mean values.
+
+> According to the central limit theorem:\
+> If the N random variables are\
+> - independent\
+> - identically distributed\
+> - E\[Xi\] = $\mu$ and Var\[Xi\] = $\sigma ^2$\
+> then for N -> +INF, the distribution is equivalent to a normal distribution with N($\mu$,$\sigma/\sqrt{N}$)
+
+#### Exercise set B
+
+**Save the code you use for the exercises!**
+
+1.  Create a set of 100 samples for a P10 accuracy test with 50 drops of 5 µl each. Repeat the same for the P200 with 50 µl. (you can decide about the range of the volume variations)
+
+2.  Calculate for each of the 100 samples the sum of the errors produced by the P10 and the P200 knowing that the expected values were respectively 5 µl and 50 µl. Look at the distribution of these sums. What do you think about it? Is it a known distribution?
+
+3.  Which type of plot could you use to verify your hypothesis by comparing the theoretical and the experimental distributions? Can you find parameters to fit the experimental distribution?
+
+------------------------------------------------------------------------
+
+# 4. Confidence interval
+
+The confidence interval describes the interval containing the (unknown) expectation value of a distribution with 95% confidence. This means that out of 100 random realizations of this random variable, the true expectation value $\mu$ will indeed be in this interval.
+
+Let us try a simulation: we consider a random variable distributed according to a Poisson distribution $$P(x) = \frac{{e^{ - \lambda } \lambda ^x }}{{x!}}$$ Here, *we know the true value of the expectation value*. We want to get an estimate for $\lambda$, and check if the confidence interval contains the true expectation value.
+
+For example, a farmer expect to collect 75 eggs from his hens per hour.
+
+```{r}
+lambda = 75
+```
+
+We now consider 100 samples of $N=8$ realization per day of the random variable, and compute the mean $m_N$ over these $N=8$ realizations, then determine the 95% confidence interval, and check, how often the expectation value $\mu$ is inside the confidence interval. Remember that the 95% CI is given by $$
+[m_N-t_{95,N-1}\frac{\sigma}{\sqrt{N}},m_N+t_{95,N-1}\frac{\sigma}{\sqrt{N}}]
+$$ where $t_{95,N-1}$ is the critical value for the $t$-distribution with $n-1$ degrees of freedom.
+
+Let's start by creating our samples:
+
+```{r}
+# size of the sample
+N = 8
+df = N-1 # degrees of freedom of the t-distribution
+#
+# we now draw 100 times samples of size N=8
+X = lapply(1:100,function(i) {rpois(N,lambda = lambda)})
+```
+
+Now, we calculate the mean and the sandard deviation of the respective samples:
+
+```{r}
+# we compute the means
+Xm = sapply(X,mean)
+# and the sample standard deviations
+Xsd = sapply(X,sd) 
+#
+```
+
+Next, we determine the upper and lower bounds of the 95% CI:
+
+```{r}
+tc = qt(c(0.95),df) # this is the critcal value for the t-distribution for df = N-1 degrees of freedom and 95% CI
+
+Xl = Xm-tc*Xsd/sqrt(N) # upper bound of the 95% CI
+Xh = Xm+tc*Xsd/sqrt(N) # lower bound of the 95% CI
+```
+
+Finally, we determine whether each sample mean is found within the 95% CI or not:
+
+```{r}
+col = c('red','blue')
+
+## vector of TRUE/FALSE if the real expectation value lambda is inside the interval
+i.ok =  as.factor(Xl < lambda & Xh > lambda)
+
+## plot the 
+plot(Xm,ylim=c(50,100),pch=20,ylab="",main=paste("Means values and confidence intervals,N=",N));abline(h=lambda,lty=3);lapply(1:length(Xl),function(i) {points(c(i,i),c(Xl[i],Xh[i]),type="l",col=col[i.ok[i]],lwd=2)})
+```
+
+Here, the red/blue bars represent the confidence interval, the black dot the mean of the sample values, and the dotted line at `\lambda` represents the true expectation value. Whenever the true expectation value is within the CI, the bar is blue, if not, the bar is red How often is the true expectation value outside the CI? Count the red bars!
+
+It happens `r sum(!as.logical(i.ok))` times, which fits pretty well with the expected 5%.
+
+> Repeat this simulation, but now with samples of $N=24$ (again 100 times)\
+> What do you observe?\
+> How often is the true expectation value outside the CI?
+
+#### Exercise set C
+
+
+You are buying 10 packs of gummy bears. You particularly like the red ones and the green ones. A pack contains 6 different colors and you expect them to be equally distributed. There are 84 pieces per 200g pack.
+
+1.  What is the expected amount of red or green gummy bears?
+
+2.  You selected your 10 packs according to the colors you could see in the pack. At home, you counted the following bears per pack:\
+
+-   for the red ones: 12 16 17 12 16 13 11 18 13 19\
+-   for the green ones: 11 10 15 16 12 14 13 10 13 17\
+    Was your selection procedure a success? In other words, is the expected value bellow (congrats!), within or above (bad luck!) the 95% CI?
+
+------------------------------------------------------------------------

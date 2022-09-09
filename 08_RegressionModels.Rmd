@@ -1,0 +1,256 @@
+---
+title: "Basic statistics - Regression analysis"
+author: "Carl Herrmann, Maïwen Caudron-Herger"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::readthedown:
+    highlight: kate
+---
+
+```{r knitr_init, echo=FALSE, cache=FALSE}
+library(knitr)
+library(rmdformats)
+
+## Global options
+options(max.print="120")
+opts_chunk$set(echo=TRUE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=120)
+opts_knit$set(root.dir = "~/")
+```
+
+# 1. Objectives
+
+In this last part, we want to learn how to build a **regression model** in order to make predictions on certain quantitative variables using other quantitative variables. The important steps here are:
+
+-   **learning** the model
+-   **testing** the model to evaluate its performances, and also check that the assumptions of the linearity are given
+-   **predict** values based on new data points
+
+We will use again the diabetes data set, and build (1) simple linear regression models with a single explanatory variable, and (2) multiple regression models in which we use several variables. we will focus on predicting the **cholesterol level**.
+
+# 2. Load the data and first analysis
+
+```{r}
+tmp = read.table('https://www.dropbox.com/s/zviurze7c85quyw/diabetes_full.csv?dl=1',header=TRUE,sep="\t") 
+```
+
+We will limit the dataset to the numerical variables
+
+```{r}
+dat = tmp[,c(2,3,4,6,8,10,11,13,14,17,18)]
+head(dat)
+```
+
+#### Exercise set A
+
+1.  Remove all patients that have at least 1 NA in their data.
+
+2.  Let's look at the correlation between variables with scatterplots! Plot variable correlation scatter plots for all variables.
+
+3.  That's a good overview, now make a heatmap to visualize the correlation values.
+
+> What are the strongest correlations? Do they make sense?
+
+Apart from displaying the raw correlation values, we can test if any of those are **statistically significant**, i.e. if they are significantly positive (one-sided test), negative (one-sided test), or non zero (two-sided test).
+
+For example, there seems to be a positive correlation between stabilized glucose (`stab.glu`) and hip circumference.
+
+```{r}
+## compute correlation
+cor(dat$stab.glu,dat$hip)
+##
+## test for significance
+cor.test(dat$stab.glu,dat$hip)
+```
+
+> read carefully the report, and make sure you understand this output. Check other pairs! Can you determine exactly which correlation level with n=377 patients leads to a p-value lower than 0.05? (check the formular in the slides...)
+
+# 3. Univariate linear regression
+
+> What is the most promising variable to predict cholesterol level?
+
+We will use glycosilated hemoglobin (`glyhb`) as a predictor of the cholesterol level:
+
+**Beware that you have to use the dat data frame in which the rows with missing values have been removed!!** If you have not managed to do so, use the code below!
+
+```{r}
+dat = dat[apply(dat,1,function(x) {sum(is.na(x))==0}),]
+```
+
+```{r}
+l.g = lm(chol ~ glyhb, data=dat)
+summary(l.g)
+```
+
+For a simple lineare regression (with only one explanatory variable), the p-value of the t-test for the slope is identical with the p-value of the F-test for the global model. *This will no longer be the case when including several explanatory variables!*
+
+By the way, have we checked that a linear regression makes sense in this case? Remember that we have to check that:
+
+-   the residuals are **normally distributed**
+-   there is **no correlation** between the residuals and the explanatory variable
+
+```{r}
+# normal distribution of residuals?
+hist(l.g$residuals,breaks=20)
+##
+qqnorm(l.g$residuals);qqline(l.g$residuals)
+##
+## correlation residuals x-values?
+cor(dat$glyhb,l.g$residuals)
+plot(dat$glyhb,l.g$residuals,pch=20)
+```
+
+> What is your overall opinion about the validity of the regression model here?
+
+We can now use the model to predict the cholesterol values, and compare them to the real cholesterol values, since we have the information in this dataset
+
+```{r}
+plot(dat$chol,l.g$fitted.values,pch=20,col='blue', xlab='Real values',ylab='Predicted values');abline(0,1,col='red')
+```
+
+Not really super convincing, right? Let's put more information into the model!
+
+#### Exercise set B
+
+1.  Write a code to perform the regression analysis using each time a different input variable to predict cholesterol
+
+2.  Make a plot (which type?) of the F-values for these different models.
+
+#4. Multiple regression model
+
+Let us include all the information to try to predict cholesterol level:
+
+```{r}
+l1 = lm(chol ~ .,data=dat)
+summary(l1)
+```
+
+> Do you note something unexpected in this report?
+
+We can see that the inclusion of several explanatory variables improves the regression. Check the $R^2$ values for example!
+
+We can see that the variables `weight`, `waist` and `hip` do not reach the significance level. Two explanations are possible
+
+1.  either these variables are indeed non-informative regarding the prediction of the cholesterol level
+2.  or the mutual correlation between these 3 variables interferes with the model.
+
+We can remove waist and hip for example, the redo the regression
+
+```{r}
+l2 = lm(chol ~ stab.glu + hdl + glyhb + age + height + weight  + bp.1s + bp.1d,data=dat)
+summary(l2)
+```
+
+We can see how the `weight` variable seems indeed to contribute to the prediction of the cholesterol; the removal of the strongly correlated variables has increased its significance. It now almost reaches significance at the 5% level!
+
+> Check the result of the F-test to compare both models!
+
+We can now check if the prediction are better that with the univariate model
+
+```{r}
+plot(dat$chol,l2$fitted.values,pch=20,col='blue', xlab='Real values',ylab='Predicted values');abline(0,1,col='red')
+```
+
+Better? I would say so... To determine the accuracy, we can compute the so called **root mean squared error (RMSE)**
+
+$$
+RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^n (x_i-\hat{x_i})^2}
+$$
+
+```{r}
+n = nrow(dat)
+rmse = sqrt(1/n*sum(l2$residuals^2))
+rmse
+```
+
+Of course, this is cheating, right? We are predicting the values on **exactly** the same data we used to learn the model. In real machine learning, we need to perform **cross-validation**, i.e. learn the model on one part of the data (*training set*) and validate it on another set (*test set*).
+
+Let us split the dataset in a test and training set randomly
+
+```{r}
+##
+## take 200 random patients to form the training set
+i.train = sample (1:nrow(dat),200)
+##
+dat.train = dat[i.train,]
+dat.test = dat[-i.train,]
+```
+
+We now learn a new model on the train dataset:
+
+```{r}
+l.train = lm(chol ~ stab.glu + hdl + glyhb + age + height + weight  + bp.1s + bp.1d,data=dat.train)
+summary(l.train)
+```
+
+We can compute the RMSE for the training dataset
+
+```{r}
+n = nrow(dat.train)
+rmse.train = sqrt(1/n*sum(l.train$residuals^2))
+rmse.train
+```
+
+Let use use that model to predict cholesterol values for the left out test set
+
+```{r}
+pred = predict(l.train,newdata = dat.test)
+```
+
+and compute the rmse:
+
+```{r}
+n = nrow(dat.test)
+residuals = dat.test$chol - pred
+rmse.test = sqrt(1/n*sum(residuals^2))
+rmse.test
+```
+
+Of course, the RMSE is higher on the test dataset, since this does not include the data used for the establishment of the regression model; however, this is a more realistic estimation of the validity of the model, as it indicates how well the model could be extended to novel, independent data!
+
+An important topic here is **feature selection**, i.e. finding the optimal and minimal set of explanatory variables that allow to predict well the output variable.
+
+#### Exercise set C
+
+1.  Repeat the train/test split 10 times with each time a different random split; plot the 10 rmse.train and rmse.test values!
+
+2.  Imagine a strategy to, starting from the model with all variables, remove iteratively some variable using a specific criterion (e.g. p-value of F-test)
+
+3.  Implement this strategy in R, and produce some plots to monitor how the performance of the model evolves with different sets of variables!
+
+# 4. Using PCA to determine independent variables
+
+To solve the problem of correlated variables, we can compute principal components on all explanatory variables
+
+```{r}
+# remove the first column as this is the output variable
+pca = prcomp(dat[,-1])
+summary(pca)
+```
+
+We can display the definition of the principal components in terms of the original variables:
+
+```{r}
+par(las=2);barplot(pca$rotation[,1],horiz=TRUE,main='PC1',col='red')
+```
+
+Now perform the multiple linear regression model using the PCs as explanatory variables rather than the original variables.
+
+> Check that the PCs are not correlated to each other any more by reproducing the correlation analysis we did at the beginning and display the correlation heatmap.
+
+Let us now run the linear regression with all PCs:
+
+```{r}
+l.pca = lm(dat$chol ~ pca$x)
+summary(l.pca)
+```
+
+> Produce the barplots to display the definition of the significant principal components in this analysis
+
+> Reproduce this analysis for the variable `glyhb`
