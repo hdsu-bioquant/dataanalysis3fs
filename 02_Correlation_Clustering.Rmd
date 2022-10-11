@@ -20,28 +20,48 @@ opts_knit$set(width=120)
 
 ```
 
-```{r, echo=FALSE, eval = TRUE}
-dat = read.delim('https://tinyurl.com/y4fark9g', stringsAsFactors = FALSE)
+We use again the diabetes dataset, and perform again the data cleaning:
 
+```{r, echo=FALSE, eval = TRUE}
+dat = read.delim('https://tinyurl.com/y4fark9g')
+
+# set the row names using the column id
 rownames(dat) = dat$id
-dat = dat[, -which(colnames(dat) %in% c("id","bp.2s", "bp.2d", "time.ppn"))]
+
+# now we remove some columns: first, we determine which column index corresponds to the column names id, bp.2s, bp.2d, time.ppn
+i.remove = which(colnames(dat) %in% c("id","bp.2s", "bp.2d", "time.ppn"))
+i.remove
+
+# now remove these columns, using the - sign:
+dat = dat[, -i.remove]
+
+# we reorder the remaining columns, in order to put the categorical columns first, and numerical columns after
 dat = dat[,c(8,6,11,9,10,14,15,2,5,1,3,4,12,13)]
 
-rmv.rows = apply(dat,1,function(x){sum(is.na(x))}) # Go through each row and sum up all missing values
-dat = dat[- which(rmv.rows > 0),] # Removing any row with 1 or more missing values
-rm(rmv.rows)
-dat$location = factor(dat$location) #making data nominal
-dat$gender = factor(dat$gender) #making data nominal
-dat$frame = factor(dat$frame, levels=c("small", "medium", "large")) #making data ordinal
+# Go through each row and sum up all missing values
+rmv.rows = apply(dat,1,function(x){sum(is.na(x))}) 
 
+# see the number of missing values of the first rows:
+head(rmv.rows)
+
+# determine the row index of rows with 1 or more missing values
+i.missing = which(rmv.rows >0)
+head(i.missing)
+
+# remove the columns which have more than one missing value
+dat = dat[-i.missing,] 
 
 ```
+
+#### Exercise 0
+
+The numerical columns start at column index 4 and end at column index 14. Can you create a new dataframe called `dat.num` containing only the numerical columns?
 
 # Correlation - Clustering
 
 ## 0. Recap of the last sheet
 
-We have looked at a dataset of diabetes patients and used functions to clean it up of missing data and visualize the cleaned up data. If the dataset is not in your environment anymore (See top right pane) go through all the functions of part 1 concerning this dataset.
+We have looked at a dataset of diabetes patients and used functions to clean it up of missing data and visualize the cleaned up data. If the dataset is not in your environment anymore (See top right panel) go through all the functions of part 1 concerning this dataset.
 
 **Recommendation:** in order to avoid going through several excercise sheets in the future create now a R file where you save all of the code that we use to manipulate our data.
 
@@ -63,7 +83,7 @@ In this sheet we will keep looking at our dataset to explore the statistical pro
 
 ## 2. Measuring the centrality in data
 
-Before you begin, think back of the lecture about mean, mediana and quantiles. Do you remember what these terms mean? How does an asymmetrical distribution influence mean and median? Think back to all these topics before you proceed.
+Before you begin, think back of the lecture about mean, median and quantiles. Do you remember what these terms mean? How does an asymmetrical distribution influence mean and median? Think back to all these topics before you proceed.
 
 We have already seen that the `summary` and `quantile` functions in R can compute the mean, median and quantiles of any given data. Let now use functions in R that explicitly measure these values.
 
@@ -81,7 +101,7 @@ median(dat$stab.glu)
 
 > Calculate the mean and median of other continuous numeric data in the diabetes dataset and measure the difference between them. (a) Why is there a difference between the mean and median? (b) Why do you think there are larger differences for some and almost no difference for others?
 
-You should still be familiar with the 'quantile' function since you needed it for the last exercise in the last exercise of the past sheet.
+You should still be familiar with the `quantile` function since you needed it for the last exercise in the last exercise of the past sheet.
 
 ### Quantiles
 
@@ -91,17 +111,21 @@ quantile(dat$stab.glu)
 
 > Did you remember how it works? And how you can pick any specific quantile you need?
 
-#### Exercise set A
+#### Exercise 1
 
-1.  Create a new dataframe (nrow = 3 and ncol = 2) and fill its first column with the difference between mean and median (median-mean) of 'glyhb', 'chol' and 'stab.glu '. Fill the second column with "Neg" if the difference is negative and "Pos" if the difference is positive. Don't just assign the values but use functions/logic checks; *Suggested: 'which', 'apply', 'if'*
-2.  Calculate the mean and median of the three columns without the outliers beyond the 10th and 90th quantile. What is the effect on the mean? And the median? Can you explain the difference? (Only print values in the code, no need to answer questions in the solution code)
-3.  Write a **new function** that takes a columns of 'dat' (e.g. 'stab.glu') as input and draws a histogram out of its values and draws lines that indicate the mean and the median in the histogram. Call the function on 'chol'. *Bonus task: Can you make the color of the lines customisable every time you call the function?*
+1.  Compute the mean value of the cholesterol variable and store it in the variable `m`.
+2.  Compute the 1%, 10%, 25%, 50% (=median), 75%, 90%, 99% quantiles using the `quantile` function, and using the argument `probs=c(0.01,0.1,0.25,0.5,0.75,0.9,0.99)`. Store these value in a new vector variable called `q`
+3.  Plot the values of cholesterol as a histogram using the `hist` function
+4.  Use the `abline(v=…)` function to plot vertical lines on top of the histogram at the values corresponding to the quantiles you have just computed.
+5.  Repeat this with the blood pressure!
 
 ## 3. Association between variables
 
-Often a common step during any data analysis project is to find associations between variables present in the dataset. Such associations helps us to decipher the underlying structure in the data. For instance, in our diabetes dataset we would expect a high correlation between free blood glucose levels and glycosylated blood levels or between waist and hip sizes. On one hand, prior knowledge helps us to know what to expect and if this expectation does not hold true it may hint at some issues with the data. On the other hand, novel associations helps to gain new knowledge. One of the most common ways of measuring associations is *correlations*.
+Often a common step during any data analysis project is to find associations between variables present in the dataset. Such associations helps us to decipher the underlying structure in the data. For instance, in our diabetes dataset we would expect a high correlation between free blood glucose levels and glycosylated blood levels or between waist and hip sizes. One of the most common ways of measuring associations is *correlations*:
 
-Let us start by producing a scatter plot between some pairs of variables:
+### Correlations
+
+Let us start by producing a **scatter plot** between some pairs of variables:
 
 ```{r, eval = TRUE}
 plot(dat$stab.glu,dat$glyhb,
@@ -135,88 +159,32 @@ plot(rank(dat$stab.glu),rank(dat$glyhb),
 
 When looking at the ranks, the relationship is no longer so obvious. However, these correlations still represent an association between the variables!
 
-#### Exercise set B
+#### Exercise 2
 
-1.  Repeat the process for `hip` and `waist`. Plot the ranks of the variables only if you find that the two different correlations differ.
-2.  Use two nested 'for' loops to calculate the Pearson correlation between all variables of 'dat' and fill a dataframe with the results. Print out the dataframe. Can you recognize any logical structure in this dataframe?
-3.  Find the 10 highest Pearson correlation values. Be careful of values repeating themselves and negatives!
+1.  Repeat the process for `hip` and `waist`. Do a scatter plot of the **values** and of the **ranks**, and compute both the **pearson** and **spearman** correlation values.
+2.  Use the numerical dataframe `dat.num` you created in exercise 0, and apply the function `cor` **directly** on this data frame: `cor(dat.num)` . What happens? What is the output? Store the result of this command in a variable named `all.cor`
+3.  Find the highest and lowest Pearson correlation value. To which pair of variables do they correspond? Plot the corresponding scatter plots!
+4.  
 
-<details>
 
-<summary>
-
-<b>Ned a bit of help ...?</b>
-
-</summary>
-
-`for` loops are structures that allow to reapeat the same operation several times. For example, we generate 10 random numbers, store them in a vector `x` and compute the square using a `for`-loop:
-
-```{r eval=FALSE}
-x = rnorm(10)
-for (i in 1:10) {print(x[i]^2)}
-```
-
-We could have replaced 10 by the length of the vector `x`:
-
-```{r}
-for (i in 1:length(x)) {print(x[i]^2)}
-```
-
-What about nested loops?? Previously, we had a one-dimensional vector `x`; suppose we have now a 2-dimensional object (matrix or data.frame), and we want to explore all the elements. This can be done with 2 nested `for` loops:
-
-```{r eval=FALSE}
-X = matrix(rnorm(100),nrow=20)
-for (i in 1:nrow(X)) {
-  for (j in 1:ncol(X)) {
-    print(X[i,j]^2)
-  }
-}
-```
-
-Now you can adapt this to compute the pairwise correlation of all variables, by using 2 nested for loops which each loop over the **columns** of the matrix!
-
-</details>
-
-#### SOLUTION
-
-```{r}
-dat.num = dat[,-(1:3)]
-XX = sapply(1:ncol(dat.num),function(i) {sapply(1:ncol(dat.num),function(j) {
-  cor(dat.num[,i],dat.num[,j])
-})})
-XX
-```
-
-```{r}
-i = order(XX,decreasing = TRUE)
-XX[i]
-```
-
-### Pairwise correlations
+### Pairwise scatter plot
 
 Lets calculate and visualize the correlations among all our variables in the diabetes dataset
 
 ```{r, fig.width=12, fig.height=10}
-cor.mat = cor(dat[,4:ncol(dat)], method="pearson") # First three columns are discrete data
-round(cor.mat,2) # all pairwise correlations
-par(mar=c(3,3,0.5,0.5), mgp=c(1.5,0.5,0), las=2)
-pairs(dat[,4:ncol(dat)], pch=20, cex=0.5, col="grey")
+pairs(dat.num, pch=20, cex=0.5, col="grey")
 ```
 
-> Change `method="spearman"` while calculating correlations and observe the differences. Which correlations did you expect to see and what were novel? Can you explain the relation you observe between `hdl, chol and ratio`. Remember that `ratio = chol/hdl` [see here](http://biostat.mc.vanderbilt.edu/wiki/pub/Main/DataSets/Cdiabetes.html)
+> Which correlations did you expect to see and what were novel? Can you explain the relation you observe between `hdl, chol and ratio`. Remember that `ratio = chol/hdl` [see here](http://biostat.mc.vanderbilt.edu/wiki/pub/Main/DataSets/Cdiabetes.html)
 
 > Associations are among the simplest forms of structure in the data! It is important to remember that *Association does not imply correlation* and *Correlation does not imply causation*. Take a look at this page to view few common logical fallacies. [see here](https://en.wikipedia.org/wiki/Fallacy)
 
 ## 4. Unsupervised learning - clustering
 
-Unsupervised learning is a machine learning type that encompasses all computational methods that allow a machine to find structure in data without any human inducations e.g. predefined categorization criterias. **K-means clustering** is a good example of unsupervised learning because the method categorizes sample based uniquely on the data.
+**Unsupervised clustering** is one of the most basic data analysis techniques. It allows to identify groups (or clusters) or observations (here: patients) or variables. *Unsupervised* means that you are not using any prior knowledge about groups of variables or associations.  **K-means clustering** is a good example of unsupervised learning because the method categorizes sample based uniquely on the data.
 
-Throughout this part of the course we will use a common gene expression dataset for acute lymphoblastic leukemia (ALL) and acute myeloid leukemia (AML) to practically implement the concepts taught during this part of the lecture. This data has gene expression values from 72 samples (ALL = 47 and AML = 25) for 7129 genes. The samples have been annotated as follows
-
--   **Samples:** These are the patient sample numbers/IDs.
--   **ALL.AML:** Type of tumor, whether the patient had acute myeloid leukemia (AML) or acute lymphoblastic leukemia (ALL).
--   **BM.PB:** Whether the sample was taken from bone marrow (BM) or from peripheral blood (PB).
--   **T.B.cell:** ALL arises from two different types of lymphocytes (T-cell and B-cell). This specifies which for the ALL patients; it is NA for the AML samples.
+In this part, we will use a dataset of gene expression data from the TCGA (The Cancer Genome Atlas) project. This project has sequenced several thousand samples from cancer patients of more thatn 30 cancer types.
+We will use a subset of this data, containing 200 samples (=patients, as columns) , for which the expression of 300 genes (= rows) has been measured.
 
 ### 4.1 Lets get started - Load data
 
@@ -225,19 +193,20 @@ Throughout this part of the course we will use a common gene expression dataset 
 We will start by reading the gene expression data. The columns are the samples and the rows are the genes.
 
 ```{r}
-#all.aml.exp = read.delim("https://www.dropbox.com/s/ulckmlj5k1edywx/ALLcancerdata.txt?dl=1", header=T, check.names = F)
-all.aml.exp = readRDS(url('https://www.dropbox.com/s/eqjf32cklgtkfnr/all.aml.exp.rds?dl=1'))
-dim(all.aml.exp)
-all.aml.exp[1:10,1:10]
+
+brca.exp = readRDS(url('https://www.dropbox.com/s/qububmfvtv443mq/brca.exp.rds?dl=1'))
+dim(brca.exp)
+brca.exp[1:10,1:10]
 ```
 
-**WARNING**: If you have problem loading the data, please download [this file](https://www.dropbox.com/s/eqjf32cklgtkfnr/all.aml.exp.rds?dl=1), store it on your disk, and open it with the following command:
+**WARNING**: If you have problem loading the data, please download [this file](https://www.dropbox.com/s/qububmfvtv443mq/brca.exp.rds?dl=1), store it on your disk, and open it with the following command:
 
 ```{r}
-#all.aml.exp = readRDS("xxxx") # xxxx should be replaced with the path to the downloaded file!
+#brca.exp = readRDS("xxxx") # xxxx should be replaced with the path to the downloaded file!
 ```
 
-#### Exercise set C
+
+#### Exercise 3
 
 Let's use this new dataset as an opportunity to apply the skills we learned in the previous exercise sheet. It's crucial that you keep exercising and repeating, otherwise you will easily forget your coding skills.
 
@@ -251,18 +220,19 @@ Let's use this new dataset as an opportunity to apply the skills we learned in t
 Question 1:
 
 ```{r}
-apply(all.aml.exp,2,mean)
-apply(all.aml.exp,2,median)
-apply(all.aml.exp,2,sd)
+apply(brca.exp,2,mean)
+apply(brca.exp,2,median)
+apply(brca.exp,2,sd)
 ```
 
 Question 2:
 
 ```{r}
-m.genes = apply(all.aml.exp,1,mean)
-M.genes = apply(all.aml.exp,1,median)
-s.genes = apply(all.aml.exp,1,sd)
-hist(s.genes,breaks=1000,xlim=c(-1000,1000))
+m.genes = apply(brca.exp,1,mean)
+M.genes = apply(brca.exp,1,median)
+s.genes = apply(brca.exp,1,sd)
+hist(M.genes,breaks=20)
+hist(s.genes,breaks=20)
 ```
 
 Question 4:
@@ -276,14 +246,23 @@ sum(s.genes<S)/length(s.genes)
 Next we will load the clinical annotation file for this gene expression data and explore it
 
 ```{r}
-all.aml.anno = readRDS(url('https://www.dropbox.com/s/kosnpkvlptfxss7/all.aml.anno.rds?dl=1'))
-
-#all.aml.anno = read.delim("https://www.dropbox.com/s/ejgf6mu5ca9uhv2/ALLannotation.txt?dl=1", header=T)
-head(all.aml.anno)
-summary(all.aml.anno)
-# a sanity check to make sure that the order of patients in the annotation and expression matrix is the same
-sum(colnames(all.aml.exp) == rownames(all.aml.anno)) 
+brca.anno = readRDS(url('https://www.dropbox.com/s/z6bzwzgzdhky1qz/brca.anno.rds?dl=1'))
+head(brca.anno)
 ```
+
+Same here: if you have issues running the previous `readRDS` command, download [this file](https://www.dropbox.com/s/z6bzwzgzdhky1qz/brca.anno.rds?dl=1), save it on your disk and load it with 
+
+```{r}
+### brca.anno = readRDS(xxx)
+```
+
+
+You can check the number of samples for each tumor type using the `table` function, applied to a specific column (here, there is only one column...)
+
+```{r}
+table(brca.anno$HER2_status)
+```
+
 
 ### 4.2 Data transformation
 
@@ -291,87 +270,62 @@ You see that the distribution of the data is extremely squeezed due to **outlier
 
 We will carry out the following data processing steps. Some of these steps use rather arbitrary values, which come from visually inspecting the data!
 
-1.  **Thresholding:** fix the lowest and highest values to 100 and 16,000 respectively
+1.  **Thresholding:** cap the values to the 95th percentile
 
-2.  **Filtering:** remove genes with
+2.  **Homogenization:** base--2 logarithmic transformation of the entire dataset
 
-    -   max / min ≤ 5 or
-    -   (max − min) ≤ 500, where max and min is the maximum and minimum intensities for a particular gene across mRNA samples
-
-3.  **Homogenization:** base--10 logarithmic transformation of the entire dataset
-
-4.  **Scaling:** standardize the data so that across genes the mean = 0 and variance = 1.
+3.  **Scaling:** standardize the data so that across genes the mean = 0 and variance = 1.
 
 **Before we start modifying the data, we will store the original data frame into a variable, so that in case of problems we can revert back to the initial data!!**
 
 ```{r}
-all.aml.exp.original = all.aml.exp
+brca.exp.original = brca.exp
 ```
 
 **Thresholding**
 
 ```{r}
-all.aml.exp[all.aml.exp < 100] = 100
-all.aml.exp[all.aml.exp > 16000] = 16000
-min(all.aml.exp); max(all.aml.exp)
+## what is the value of the 95th percent percentile?
+q95 = quantile(brca.exp,probs=0.95)
+
+## set all values above to this value
+brca.exp[brca.exp>q95] = q95
 ```
 
-**Filtering**
-
-```{r}
-min.val.gene = apply(all.aml.exp, 1, min)
-max.val.gene = apply(all.aml.exp, 1, max)
-genes.remove = which(max.val.gene/min.val.gene <=5 | max.val.gene - min.val.gene <= 500)
-length(genes.remove)
-all.aml.exp = all.aml.exp[-genes.remove,]
-dim(all.aml.exp)
-```
 
 **Homogenization and Scaling**
 
 ```{r}
-all.aml.exp = log10(all.aml.exp)
-all.aml.exp = scale(all.aml.exp)
-plot(density(as.matrix(all.aml.exp)))
-```
+## take log2
+brca.exp = log2(brca.exp+1) ## why do we add +1 ??
 
-> As you see from the annotation file above the dataset has samples from ALL and AML patients. Can you split the gene expression matrix into AML and ALL sets and individually find the gene/probe with the highest median expression in the two cancer types Why do you think the distribution above looks bi-modal
+## scaling
+brca.exp = scale(brca.exp)
+
+## plotting the density
+plot(density(brca.exp))
+```
+Compare to the density plot before these pre-processing steps
 
 ```{r}
-all.patients = which(colnames(all.aml.exp) %in% all.aml.anno$Samples[all.aml.anno$ALL.AML == "ALL"])
-#
-all.dat = all.aml.exp[,all.patients] #Similarly do for AML
-med.exp.all = apply(all.dat, 1, median)
-med.exp.all[med.exp.all == max(med.exp.all)]
+plot(density(brca.exp.original))
 ```
+
 
 ## 4.3 k-means clustering
 
 Another widely used method for grouping observations is k-means clustering. Now we will cluster our dataset using kmeans and explore the underlying structure of the data.
 
-### Using the most variable, thus informative genes
-
-We first reduce our dataset to take the most variable gene, which are expected to carry most of the information about the samples:
-
-```{r}
-## compute variance over all rows of the data.frame (hence genes)
-topVar = apply(all.aml.exp, 1, var) 
-summary(topVar)
-## filtering to keep genes which have a variance greater than the 75% percentile
-all.aml.exp.topVar = all.aml.exp[topVar > quantile(topVar, probs = 0.75),] 
-dim(all.aml.exp.topVar)
-```
 
 ### performing k-means
 
 We use the function `kmeans` in R. You can check the options and usage in the help panel on the right. The parameter `centers` indicates how many clusters are requested.
 
 ```{r}
-km = kmeans(x=t(all.aml.exp.topVar), 
+km = kmeans(x=t(brca.exp), 
             centers = 2, 
             nstart = 10)
-km$cluster
-str(km)
+
 ```
 
 > Just type `km` in your console and check all results generated. Play around with the `centers` parameter. See cluster assignments by typing `table(km$cluster)`
@@ -392,7 +346,7 @@ We can also run a little loop to do this:
 
 ```{r}
 wss = sapply(2:7,function(k) { 
-  kmeans(x=t(all.aml.exp.topVar), centers =k)$tot.withinss
+  kmeans(x=t(brca.exp), centers =k)$tot.withinss
 })
 plot(2:7,wss,type='b',pch=19,xlab="Number of clusters K",
      ylab="Total within-clusters sum of squares")
@@ -404,22 +358,32 @@ To run the silhouette method, we need to compute the pairwise distances between 
 
 ```{r}
 ## compute the patient-patient distance matrix (this is why we transpose)
-D = dist(t(all.aml.exp.topVar))
+D = dist(t(brca.exp))
 ```
 
 We now compute the silhouette for a specific kmeans clustering:
 
 ```{r}
 library(cluster)
-km = kmeans(x=t(all.aml.exp.topVar), centers = 2, nstart = 10)
+km = kmeans(x=t(brca.exp), centers = 2, nstart = 10)
 s = silhouette(km$cluster,D)
 plot(s)
 ```
 
 > Check the average silhouette values at the bottom; repeat this for other values of k
 
-#### Exercise set D
+#### Going further...
 
-Let's use this new dataset as an opportunity to apply the skills we learned in the previous exercise sheet. It's crucial that you keep exercising and repeating, otherwise you will easily forget your coding skills.
+You have used a dataset with a reduced number of genes (= rows). They have been pre-selected, according to certain criteria. Here is a larger dataset, with more genes for the same samples
 
-1.  You have transformed your dataset to avoid that outliers could affect your clustering excessively. Run kmeans clustering on the original all.aml.exp.original dataset and plot the silhouette. Do you see any difference?
+```{r}
+brca.large = readRDS(url('https://www.dropbox.com/s/m6nfxul95borupz/brca.exp_large.rds?dl=1'))
+```
+
+Follow the next steps:
+
+1. use the `apply` function on all rows to compute the standard deviation of the genes using the `sd()` function
+2. use the `order(...,decreasing=TRUE)` function to determine the row index of the top 200 most variant genes
+3. redo the heatmap with these genes
+
+
