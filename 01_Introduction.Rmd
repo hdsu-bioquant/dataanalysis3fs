@@ -29,7 +29,7 @@ In this practical session you will
 
 Throughout this course we will use a common **diabetes dataset** to practically implement the concepts taught during the lectures.
 
-Our dataset has various pathophysiological measurements of \>400 individuals. Clinical parameters like blood glucose levels, cholesterol levels, age, body size, weight, blood pressure etc have been measured. We will use this dataset to explore the statistical properties of each variable (like its distribution, mean value etc) and question relations between variables (like is blood glucose level correlated with obesity?).
+Our dataset has various pathophysiological measurements of > 400 individuals. Clinical parameters like blood glucose levels, cholesterol levels, age, body size, weight, blood pressure etc have been measured. We will use this dataset to explore the statistical properties of each variable (like its distribution, mean value etc) and question relations between variables (like is blood glucose level correlated with obesity?).
 
 # 2. Let's take our first steps in RStudio
 
@@ -318,6 +318,7 @@ FirstRound = c(6,4,2)
 SecondRound = c(5,7,3)
 ThirdRound = c(6,5,8)
 ```
+
 
 # 5. Visualizing data distribution
 
