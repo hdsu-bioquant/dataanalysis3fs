@@ -1,6 +1,6 @@
 ---
 title: "Data Analysis - Exercice Sheet 1"
-author: "Carl Herrmann, M. Caudron-Herger"
+author: "Carl Herrmann, Maïwen Caudron-Herger"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -199,8 +199,8 @@ rownames(dat) = dat$id
 ## Remove columns with names being "id","bp.2s", "bp.2d" or "time.ppn"
 dat = dat[, -which(colnames(dat) %in% c("id","bp.2s", "bp.2d", "time.ppn"))]
 
-## Reorder remaining columns in the order 8,6,11,9,10,14,15,2,5,1,3,4,12,13
-dat = dat[,c(8,6,11,9,10,14,15,2,5,1,3,4,12,13)]
+## Reorder remaining columns in the order 8,6,11,7,9,10,14,15,2,5,1,3,4,12,13
+dat = dat[,c(8,6,11,7,9,10,14,15,2,5,1,3,4,12,13)]
 ```
 
 Now lets look at our cleaned data
@@ -310,7 +310,7 @@ In this section you will learn the essential functions to plot data in an intuit
 
 ### Histograms
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 summary(dat$stab.glu) # What are these values? Replace summary by quantile and see what happens
 hist(dat$stab.glu, xlab ="Stabilized Glucose concentration in blood", main ="")
 abline(v=summary(dat$stab.glu)[2:5], col = c("blue", "red", "black", "orange"), lty=2)
@@ -320,7 +320,7 @@ Add the parameter `breaks = 50` in the above lines of code and see what happens.
 
 ### Density plots
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 plot(density(dat$stab.glu), xlab ="Stabilized Glucose concentration in blood", main ="")
 abline(v=summary(dat$stab.glu)[2:5], col = c("blue", "red", "black", "orange"), lty=2)
 ```
@@ -329,7 +329,7 @@ Using the function `abline` plot a vertical line highlighting the glucose concen
 
 ### Boxplots
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 boxplot(dat$stab.glu, xlab ="Stabilized Glucose concentration in blood", horizontal = T)
 abline(v=summary(dat$stab.glu)[2:5], col = c("blue", "red", "black", "orange"), lty=2)
 ```
@@ -342,7 +342,7 @@ As discussed in the lecture, we can use **QQ-plots** to either (1) compare two d
 
 We can for example compare the distribution of the blood pressure values to check if they are normally distributed
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 ## Let's first make a histogram
 hist(dat$bp.1s)
 
@@ -352,13 +352,13 @@ hist(dat$bp.1s,breaks = 20)
 
 Now we can use the function `qqnorm` to generate the qqplot of this distribution against the standard normal distribution:
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 qqnorm(dat$bp.1s)
 ```
 
 Using the additional command `qqline()`, we can add a straight line that goes through the first and third quantiles:
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 qqnorm(dat$bp.1s); qqline(dat$bp.1s)
 ```
 
@@ -366,7 +366,7 @@ So, is the distribution normal??
 
 Now let's compare the quantiles of the cholesterol values of men and women!
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 ## Select the cholesterol values for men and women
 bp.men = dat$bp.1s[dat$gender=='male']
 bp.women = dat$bp.1s[dat$gender=='female']
@@ -381,8 +381,10 @@ plot(q.men,q.women,pch=20)
 
 ### Integrate histograms, density plots, violin plots and boxplots
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 library(vioplot)
+# Note: if you'd like to use specific functions, which are not available in the R Base Package or other packages uploaded per defaults, you will need to download and "active" specific packages. If you have questions about it. Let us know.
+
 layout(matrix(c(1:3)))
 
 par(mar=c(0,4,0.5,0.5), mgp=c(2.8,0.5,0), las=2)
