@@ -68,13 +68,13 @@ We have looked at a dataset of diabetes patients and used functions to clean it 
 You can also save the environment containing all the needed variables as an .RData file or separately save a variable of interest for example, the dataframe dat (after all cleaning steps)
 
 ```{r, eval= FALSE}
-save(dat, file = dat.RData)
+save(dat, file = "dat.RData")
 ```
 
 Whenever you need it, you can upload the dataframe using the function **load()**.
 
 ```{r, eval= FALSE}
-load(dat.RData)
+load("dat.RData")
 ```
 
 ## 1. Objectives
