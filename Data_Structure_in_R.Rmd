@@ -98,7 +98,7 @@ values == 'high'
 The function **which()** can be extremely useful
 
 ```{r}
-y[which(y == 5)]          # 
+y[which(y < 5)]          # 
 # [1] 2 4 -> gives you the indexes/positions of the elements in y which are < 5!
 ```
 
@@ -144,8 +144,8 @@ X
 X <- matrix(data = c(1,2,3,4,5,6), nrow = 2, ncol = 3, byrow = TRUE)
 X
 #       [,1] [,2] [,3]
-# [1,]    1    3    2
-# [2,]    2    1    3
+# [1,]    1    2    3
+# [2,]    4    5    6
 
 ```
 
