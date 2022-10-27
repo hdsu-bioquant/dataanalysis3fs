@@ -185,83 +185,21 @@ Very often the first thing one needs to do before any data science project is to
 -   Keeping columns uniformly numeric (age, weight etc) or string (names, places etc) or logical (TRUE/FALSE, 1/0)
 -   Handling strange caveats which are data specific like replacing `,` or `.`, or `;` from numbers etc
 
-Lets do some clean up of our own diabetes data --
+Lets do some clean up of our own diabetes data 
 
 1.  We will make the `id` column the row names for the dataset.
 2.  We will remove the `bp.2s` and `bp.2d` columns as it has mostly missing values (see summary above)
 3.  We will also remove the column `time.ppn` which will not be required in our analysis
 4.  We will reorder the columns of the data such that all the qualitative and quantitative values are separated. Among the quantitative values we will keep related variables together
 
-```{r}
-## Assign the id column as row names
-rownames(dat) = dat$id
 
-## Find and remove columns with names being "id","bp.2s", "bp.2d" or "time.ppn"
+To perform this cleanup, we need a couple of important functions, that we will first discuss:
 
-### find the column index using the column names
-i.remove = which(colnames(dat) %in% c("id","bp.2s", "bp.2d", "time.ppn"))
+* `which`
+* `apply`
+* `is.na`
+* `%in%`
 
-### now remove the columns with these column indices
-dat = dat[, -i.remove]
-
-## Reorder remaining columns in the order 8,6,11,7,9,10,14,15,2,5,1,3,4,12,13
-dat = dat[,c(8,6,11,7,9,10,14,15,2,5,1,3,4,12,13)]
-```
-
-Now lets look at our cleaned data
-
-```{r}
-summary(dat)
-```
-
-The ordering and selection of columns looks right, however it seems that there are certain rows that have missing values (like `glyhb` column has 13 `NA` values). Lets remove all rows with any missing value. Also lets make the columns `Location` and `Gender` nominal and the `frame` ordinal.
-
-Before we do so, let's have a look at the `is.na` function
-
-```{r}
-is.na(dat$glyhb)
-```
-
-Understand how it works? This is a vector of **logical** (or boolean) values. Let's go one step further:
-
-```{r}
-sum(is.na(dat$glyhb))
-```
-
-What just happened? Because we have used the `sum` function, R has transformed `TRUE` into `1` and `FALSE` into `0`...
-
-Now we can apply the same principle on **rows** instead of **columns**, and repeat that for all rows of the data frame:
-
-```{r}
-# Go through each row and sum up all missing values
-rmv.rows = apply(dat,1,function(x){sum(is.na(x))}) 
-
-# The number of missing values in the first 20 row
-rmv.rows[1:20] 
-
-# The rows where there is at least 1 missing value
-which(rmv.rows > 0) 
-
-# Removing any row with 1 or more missing values
-dat = dat[-which(rmv.rows > 0),] 
-
-# Making data nominal
-dat$location = factor(dat$location) 
-dat$gender = factor(dat$gender) 
-
-# Making data ordinal
-dat$frame = factor(dat$frame, levels=c("small", "medium", "large")) 
-```
-
-Now our cleaned data has no missing values, columns are cleanly ordered and each column is in the right format
-
-```{r}
-summary(dat)
-```
-
-*Can you identify which types of data (continuous, discrete etc) each column above represents and why?*
-
-That was again a lot of new code! There are many new functions to look up, but we will stop to look at two in particular: `which` and `apply`.
 
 ## which
 
@@ -310,14 +248,114 @@ Now you know two of the most important functions in R. Let's practice them!
 
 1.  Write a code to calculate the mean of each line of the matrix `Mat` without using the `mean()` function and print out the result
 2.  Add one line of code that prints out the results from exercise 1 that are greater than 4.5 by using the `which()` function
-3.  Anna, Benedict and Carlos have played three rounds of darts and written down the results. Use this information to construct a 3x3 dataframe with appropriate column names and row names. Then use the `which()` function to determine who is the winner of the first round, the second round and the third round by printing out the results. Finally use the `apply()` function to sum the values of each player up and use `which()` and `max()` to determine the final winner.
+
+## is.na
+
+As the name indicates, `is.na` tells us if a value is a missing value (represented by `NA`) or not.
 
 ```{r}
-Names = c("Anna", "Benedict", "Carlos")
-FirstRound = c(6,4,2)
-SecondRound = c(5,7,3)
-ThirdRound = c(6,5,8)
+x = 2
+is.na(x)
+
+y = NA
+is.na(y)
 ```
+
+See? We can do this with vectors:
+
+```{r}
+is.na(dat$glyhb)
+```
+
+Understand how it works? This is a vector of **logical** (or boolean) values. Let's go one step further:
+
+```{r}
+sum(is.na(dat$glyhb))
+```
+
+What just happened? Because we have used the `sum` function, R has transformed `TRUE` into `1` and `FALSE` into `0`...
+
+
+## %in%
+
+This is an operator to check which elements of a first vector are inside a second vector
+
+```{r}
+c('a','b','e') %in% c('a','b','c','d','f')
+```
+
+You can also combine that with which
+
+```{r}
+which(c('a','b','e') %in% c('a','b','c','d','f'))
+```
+
+
+## Ready for doing the cleanup!!
+
+Using the functions we have just described, let's do some cleanup!
+
+```{r}
+## Assign the id column as row names
+rownames(dat) = dat$id
+
+## Find and remove columns with names being "id","bp.2s", "bp.2d" or "time.ppn"
+
+### find the column index using the column names
+i.remove = which(colnames(dat) %in% c("id","bp.2s", "bp.2d", "time.ppn"))
+
+### now remove the columns with these column indices
+dat = dat[, -i.remove]
+
+## Reorder remaining columns in the order 8,6,11,7,9,10,14,15,2,5,1,3,4,12,13
+dat = dat[,c(8,6,11,7,9,10,14,15,2,5,1,3,4,12,13)]
+```
+
+Now lets look at our cleaned data
+
+```{r}
+summary(dat)
+```
+
+The ordering and selection of columns looks right, however it seems that there are certain rows that have missing values (like `glyhb` column has 13 `NA` values). Lets remove all rows with any missing value. Also lets make the columns `Location` and `Gender` nominal and the `frame` ordinal.
+
+
+Now we can apply the same principle on **rows** instead of **columns**, and repeat that for all rows of the data frame:
+
+```{r}
+# Go through each row and sum up all missing values
+rmv.rows = apply(dat,1,function(x){sum(is.na(x))}) 
+
+# The number of missing values in the first 20 row
+rmv.rows[1:20] 
+
+# The rows where there is at least 1 missing value
+which(rmv.rows > 0) 
+
+# Removing any row with 1 or more missing values
+dat = dat[-which(rmv.rows > 0),] 
+```
+
+
+Finally, we will turn all variables that that `character` type (i.e. character strings) into **factors**. This will turn character variables into nominal/ordinal variable types.
+
+```{r}
+# Making data nominal
+dat$location = factor(dat$location) 
+dat$gender = factor(dat$gender) 
+
+# Making data ordinal
+dat$frame = factor(dat$frame, levels=c("small", "medium", "large")) 
+```
+
+Now our cleaned data has no missing values, columns are cleanly ordered and each column is in the right format
+
+```{r}
+summary(dat)
+```
+
+*Can you identify which types of data (continuous, discrete etc) each column above represents and why?*
+
 
 
 # 5. Visualizing data distribution
@@ -327,10 +365,7 @@ In this section you will learn the essential functions to plot data in an intuit
 ### Histograms
 
 ```{r eval = TRUE}
-summary(dat$stab.glu) # What are these values? Replace summary by quantile and see what happens
-
 hist(dat$stab.glu, xlab ="Stabilized Glucose concentration in blood", main ="Glucose concentration")
-abline(v=summary(dat$stab.glu)[2:5], col = c("blue", "red", "black", "orange"), lty=2)
 ```
 
 Add the parameter `breaks = 50` in the above lines of code and see what happens. Try different values for `breaks` like `10, 20, 75, 100` and try to interpret the differences. Is this a good or bad thing about histograms in general? Type `help("hist")` to see more details about the histogram function in R. Also try plotting histograms and summaries for other continuous numeric data in our diabetes dataset.
@@ -339,19 +374,14 @@ Add the parameter `breaks = 50` in the above lines of code and see what happens.
 
 ```{r eval = TRUE}
 plot(density(dat$stab.glu), xlab ="Stabilized Glucose concentration in blood", main ="Glucose concentration")
-abline(v=summary(dat$stab.glu)[2:5], col = c("blue", "red", "black", "orange"), lty=2)
 ```
-
-Using the function `abline` plot a vertical line highlighting the glucose concentration of `300 units`.
 
 ### Boxplots
 
 ```{r eval = TRUE}
 boxplot(dat$stab.glu, xlab ="Stabilized Glucose concentration in blood", horizontal = TRUE)
-abline(v=summary(dat$stab.glu)[2:5], col = c("blue", "red", "black", "orange"), lty=2)
 ```
 
-Using the `abline` function draw lines passing through the whiskers of the boxplot
 
 ### QQ-plots
 
@@ -385,8 +415,12 @@ Now let's compare the quantiles of the cholesterol values of men and women!
 
 ```{r eval = TRUE}
 ## Select the cholesterol values for men and women
-bp.men = dat$bp.1s[dat$gender=='male']
-bp.women = dat$bp.1s[dat$gender=='female']
+
+rows.men = which(dat$gender=='male')
+rows.women = which(dat$gender=='female')
+
+bp.men = dat$bp.1s[rows.men]
+bp.women = dat$bp.1s[rows.female]
 
 ## Compute the quantiles (note the na.rm option to ignore missing NA values!)
 q.men = quantile(bp.men,probs=seq(0,1,by=0.05),na.rm=TRUE)
