@@ -57,6 +57,14 @@ dat = dat[-i.missing,]
 
 The numerical columns start at column index 4 and end at column index 14. Can you create a new dataframe called `dat.num` containing only the numerical columns?
 
+#### SOLUTION
+
+```{r}
+dat.num = dat[,4:14]
+```
+
+
+
 # Correlation - Clustering
 
 ## 0. Recap of the last sheet
@@ -119,6 +127,25 @@ quantile(dat$stab.glu)
 4.  Use the `abline(v=…)` function to plot vertical lines on top of the histogram at the values corresponding to the quantiles you have just computed.
 5.  Repeat this with the blood pressure!
 
+
+#### SOLUTION
+
+```{r}
+# question 1
+m.chol = mean(dat$chol,na.rm=TRUE)
+
+# question 2
+q.chol = quantile(dat$chol,probs= c(0.01,0.1,0.25,0.5,0.75,0.9,0.99))
+
+# question 3 & 4
+hist(dat$chol);abline(v=q.chol,lty=3,lwd=2,col='red')
+
+# lwd = line width, lty = line type, col = color
+```
+
+
+
+
 ## 3. Association between variables
 
 Often a common step during any data analysis project is to find associations between variables present in the dataset. Such associations helps us to decipher the underlying structure in the data. For instance, in our diabetes dataset we would expect a high correlation between free blood glucose levels and glycosylated blood levels or between waist and hip sizes. One of the most common ways of measuring associations is *correlations*:
@@ -165,8 +192,51 @@ When looking at the ranks, the relationship is no longer so obvious. However, th
 2.  Use the numerical dataframe `dat.num` you created in exercise 0, and apply the function `cor` **directly** on this data frame: `cor(dat.num)` . What happens? What is the output? Store the result of this command in a variable named `all.cor`
 3.  Find the highest and lowest Pearson correlation value. To which pair of variables do they correspond? Plot the corresponding scatter plots!
 
+#### SOLUTION
+
+```{r}
+# Question 1
+plot(dat$hip,dat$waist,pch=19)
+##
+plot(rank(dat$hip),rank(dat$waist),pch=19)
+##
+cor(dat$hip,dat$waist,method='pearson')  ##Note: as Pearson is the default method, we do not need to explicitely indicate it!
+cor(dat$hip,dat$waist,method='spearman')
+
+# Question 2
+all.cor = cor(dat.num)
+head(all.cor)
+
+## We can also plot a heatmap
+pheatmap::pheatmap(all.cor)
+
+# Question 3
+min(all.cor)
+i.min = which(all.cor == min(all.cor),arr.ind = TRUE)
+## Beware that the matrix is symmetrical, so there are 2 entries with the min value!
+## colum/row on the min entry
+col.min = i.min[1,2]
+row.min = i.min[1,1]
+
+colnames(all.cor)[col.min]
+rownames(all.cor)[row.min]
+
+max(all.cor) # This will give a value of 1, as all diagonal values are 1, whcih is trivial
+# we can put all diagonal values to NA
+diag(all.cor) = NA
+max(all.cor,na.rm=TRUE)
+
+i.max = which(all.cor == max(all.cor,na.rm=TRUE),arr.ind = TRUE)
+## Beware that the matrix is symmetrical, so there are 2 entries with the min value!
+## colum/row on the min entry
+col.max = i.max[1,2]
+row.max = i.max[1,1]
+
+colnames(all.cor)[col.max]
+rownames(all.cor)[row.max]
 
 
+```
 
 
 ### Pairwise scatter plot
@@ -217,6 +287,33 @@ Let's use this new dataset as an opportunity to apply the skills we learned in t
 3.  Plot a histogram/density plot for the median expression values from all samples and genes
 4.  Calculate how many genes have a lower standard deviation of expression than the average standard deviation. Print out their amount.
 
+#### SOLUTION
+
+Question 1:
+
+```{r}
+apply(brca.exp,2,mean)
+apply(brca.exp,2,median)
+apply(brca.exp,2,sd)
+```
+
+Question 2:
+
+```{r}
+m.genes = apply(brca.exp,1,mean)
+M.genes = apply(brca.exp,1,median)
+s.genes = apply(brca.exp,1,sd)
+hist(M.genes,breaks=20)
+hist(s.genes,breaks=20)
+```
+
+Question 4:
+
+```{r}
+# mean standard deviation
+S = mean(s.genes)
+sum(s.genes<S)/length(s.genes)
+```
 
 Next we will load the clinical annotation file for this gene expression data and explore it
 
