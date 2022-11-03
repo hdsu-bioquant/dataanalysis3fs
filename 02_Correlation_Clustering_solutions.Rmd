@@ -200,7 +200,7 @@ plot(dat$hip,dat$waist,pch=19)
 ##
 plot(rank(dat$hip),rank(dat$waist),pch=19)
 ##
-cor(dat$hip,dat$waist,method='pearson')  ##Note: as Pearson is the default method, we do not need to explicitely indicate it!
+cor(dat$hip,dat$waist,method='pearson')  ##Note: as Pearson is the default method, we do not need to explicitly indicate it!
 cor(dat$hip,dat$waist,method='spearman')
 
 # Question 2
@@ -214,21 +214,21 @@ pheatmap::pheatmap(all.cor)
 min(all.cor)
 i.min = which(all.cor == min(all.cor),arr.ind = TRUE)
 ## Beware that the matrix is symmetrical, so there are 2 entries with the min value!
-## colum/row on the min entry
+## column/row on the min entry
 col.min = i.min[1,2]
 row.min = i.min[1,1]
 
 colnames(all.cor)[col.min]
 rownames(all.cor)[row.min]
 
-max(all.cor) # This will give a value of 1, as all diagonal values are 1, whcih is trivial
+max(all.cor) # This will give a value of 1, as all diagonal values are 1, which is trivial
 # we can put all diagonal values to NA
 diag(all.cor) = NA
 max(all.cor,na.rm=TRUE)
 
 i.max = which(all.cor == max(all.cor,na.rm=TRUE),arr.ind = TRUE)
-## Beware that the matrix is symmetrical, so there are 2 entries with the min value!
-## colum/row on the min entry
+## Beware that the matrix is symmetrical, so there are 2 entries with the max value!
+## column/row on the max entry
 col.max = i.max[1,2]
 row.max = i.max[1,1]
 
