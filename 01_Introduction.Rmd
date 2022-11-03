@@ -29,7 +29,7 @@ In this practical session you will
 
 Throughout this course we will use a common **diabetes dataset** to practically implement the concepts taught during the lectures.
 
-Our dataset has various pathophysiological measurements of > 400 individuals. Clinical parameters like blood glucose levels, cholesterol levels, age, body size, weight, blood pressure etc have been measured. We will use this dataset to explore the statistical properties of each variable (like its distribution, mean value etc) and question relations between variables (like is blood glucose level correlated with obesity?).
+Our dataset has various pathophysiological measurements of \> 400 individuals. Clinical parameters like blood glucose levels, cholesterol levels, age, body size, weight, blood pressure etc have been measured. We will use this dataset to explore the statistical properties of each variable (like its distribution, mean value etc) and question relations between variables (like is blood glucose level correlated with obesity?).
 
 # 2. Let's take our first steps in RStudio
 
@@ -113,7 +113,7 @@ nrow(dat)
 colnames(dat) # Similarly rownames for rows
 ```
 
-Probably you are confused about what these column names mean. For more description on these values [look here](http://biostat.mc.vanderbilt.edu/wiki/pub/Main/DataSets/Cdiabetes.html)
+Probably you are confused about what these column names mean. For more description on these values [look here](https://biostat.app.vumc.org/wiki/pub/Main/DataSets/Cdiabetes.html)
 
 **3.** How do we extract the minimum and maximum age of patients in our dataset
 
@@ -185,21 +185,19 @@ Very often the first thing one needs to do before any data science project is to
 -   Keeping columns uniformly numeric (age, weight etc) or string (names, places etc) or logical (TRUE/FALSE, 1/0)
 -   Handling strange caveats which are data specific like replacing `,` or `.`, or `;` from numbers etc
 
-Lets do some clean up of our own diabetes data 
+Lets do some clean up of our own diabetes data
 
 1.  We will make the `id` column the row names for the dataset.
 2.  We will remove the `bp.2s` and `bp.2d` columns as it has mostly missing values (see summary above)
 3.  We will also remove the column `time.ppn` which will not be required in our analysis
 4.  We will reorder the columns of the data such that all the qualitative and quantitative values are separated. Among the quantitative values we will keep related variables together
 
-
 To perform this cleanup, we need a couple of important functions, that we will first discuss:
 
-* `which`
-* `apply`
-* `is.na`
-* `%in%`
-
+-   `which`
+-   `apply`
+-   `is.na`
+-   `%in%`
 
 ## which
 
@@ -275,7 +273,6 @@ sum(is.na(dat$glyhb))
 
 What just happened? Because we have used the `sum` function, R has transformed `TRUE` into `1` and `FALSE` into `0`...
 
-
 ## %in%
 
 This is an operator to check which elements of a first vector are inside a second vector
@@ -289,7 +286,6 @@ You can also combine that with which
 ```{r}
 which(c('a','b','e') %in% c('a','b','c','d','f'))
 ```
-
 
 ## Ready for doing the cleanup!!
 
@@ -319,7 +315,6 @@ summary(dat)
 
 The ordering and selection of columns looks right, however it seems that there are certain rows that have missing values (like `glyhb` column has 13 `NA` values). Lets remove all rows with any missing value. Also lets make the columns `Location` and `Gender` nominal and the `frame` ordinal.
 
-
 Now we can apply the same principle on **rows** instead of **columns**, and repeat that for all rows of the data frame:
 
 ```{r}
@@ -335,7 +330,6 @@ which(rmv.rows > 0)
 # Removing any row with 1 or more missing values
 dat = dat[-which(rmv.rows > 0),] 
 ```
-
 
 Finally, we will turn all variables that that `character` type (i.e. character strings) into **factors**. This will turn character variables into nominal/ordinal variable types.
 
@@ -355,8 +349,6 @@ summary(dat)
 ```
 
 *Can you identify which types of data (continuous, discrete etc) each column above represents and why?*
-
-
 
 # 5. Visualizing data distribution
 
@@ -381,7 +373,6 @@ plot(density(dat$stab.glu), xlab ="Stabilized Glucose concentration in blood", m
 ```{r eval = TRUE}
 boxplot(dat$stab.glu, xlab ="Stabilized Glucose concentration in blood", horizontal = TRUE)
 ```
-
 
 ### QQ-plots
 
