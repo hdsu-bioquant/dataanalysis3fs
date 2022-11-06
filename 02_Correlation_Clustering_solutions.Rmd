@@ -48,7 +48,7 @@ head(rmv.rows)
 i.missing = which(rmv.rows >0)
 head(i.missing)
 
-# remove the columns which have more than one missing value
+# remove the rows which have more than one missing value
 dat = dat[-i.missing,] 
 
 ```
