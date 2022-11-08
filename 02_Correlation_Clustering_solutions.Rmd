@@ -295,6 +295,12 @@ Question 1:
 apply(brca.exp,2,mean)
 apply(brca.exp,2,median)
 apply(brca.exp,2,sd)
+
+# All three at once
+dim(brca.exp)
+#
+df_mean_median_sd <- data.frame(mean = apply(brca.exp,2,mean), median = apply(brca.exp,2,median),sd = apply(brca.exp,2,sd))
+df_mean_median_sd
 ```
 
 Question 2:
@@ -318,7 +324,7 @@ sum(s.genes<S)/length(s.genes)
 Next we will load the clinical annotation file for this gene expression data and explore it
 
 ```{r}
-brca.anno = readRDS(url('https://www.dropbox.com/s/z6bzwzgzdhky1qz/brca.anno.rds?dl=1'))
+brca.anno = readRDS(url('https://www.dropbox.com/s/9xlivejqkj77llc/brca.anno.rds?dl=1'))
 head(brca.anno)
 ```
 
