@@ -53,6 +53,7 @@ help(distributions)
 All of these functions for probability distribution follows the same common scheme, the **root name** of the function prefixed by either of **p**, **d**, **q** and **r**. For example for the Normal distribution we have the four variants of function available - **pnorm**, **dnorm**, **qnorm** and **rnorm**.
 
 Here, you can find some specific help on these functions:
+
 ```{r}
 ?rnorm
 # or
@@ -66,28 +67,76 @@ We are going to look at them more deeply in the following.
 
 ------------------------------------------------------------------------
 
-#### Exercise 1 - Practice on the various functions
+### Practice on the various functions
 
-1.  Let's get a grasp of what these functions actually do. You should be familiar with the cumulative distribution function, let's take a look at that and its inverse first. We will work with a Normal distribution. Calculate the **cumulative probability** for the values 1,2,3,4 in three different distributions, using one of the functions described previously. Short hint: **p** link **probability**. Which function are you going to use?
+1.  Let's get a grasp of what these functions actually do. You should be familiar with the cumulative distribution function, let's take a look at that and its inverse first. We will work with a Normal distribution. Calculate the **cumulative probability** for the values 1,2,3,4 in three different distributions, using one of the functions described previously. Short hint: **p** like **cumulative P-robability**. Which function are you going to use?
 
 ```{r echo=TRUE}
 
 # Distribution 1: Mean = 2, Standard Deviation = 1
+pnorm(1:4,mean=2,sd=1)
+#
 # Distribution 2: Mean = 2, Standard Deviation = 2
+pnorm(1:4,mean=2,sd=2)
+#
 # Distribution 2: Mean = 4, Standard Deviation = 1
-
+pnorm(1:4,mean=4,sd=1)
 ```
 
 Do you understand why the cumulative distribution functions change the way they do? Now, on the same distributions, calculate the inverse cdf (inverse cumulative distribution function) for the cumulative probabilities of 25%, 50 % and 75%.\
 Finally try with 100% on any of the distributions. Can you explain this result? Do you expect the result to be different in the other ones?
 
+```{r}
+qnorm(c(0.25,0.5,0.75),mean=2,sd=1)
+qnorm(c(0.25,0.5,0.75),mean=2,sd=2)
+qnorm(c(0.25,0.5,0.75),mean=4,sd=1)
+```
+
 2.  Now that you know the output of the p- and q- functions, let's look at **d- like density probability** functions. For any continuous distribution, the value of the function at any specific value is 0. This is why this probability function is used in discrete distribution such as the binomial distribution (function **dbinom()**). Calculate the probability of getting 5 events out of 5 in a binomial distribution with a probability of 0.5. Then calculate the odds of **not** getting 5 out of 5. How can you calculate this easily?
+
+```{r}
+# probability of 5 out of 5
+dbinom(5, size=5, prob=0.5)
+#
+# probability of NOT getting 5 out of 5
+1-dbinom(5, size=5, prob=0.5)
+# or
+pbinom(4, size=5, prob=0.5)
+# Remember, pbinom() returns the "cumulative probability" of ...
+```
 
 3.  Suppose that the distribution of body height is described by a **normal distribution** with **mean = 1.75 m** and standard deviation **sd = 0.15**. What is the probability that someone is taller than 1.9 m? Try to use the parameter **lower.tail** of the function pnorm().\
     Smaller than 1.6 m?
 
+```{r}
+## taller than 1.9
+pnorm(1.9,mean=1.75,sd=0.15,lower.tail=FALSE)
+# or
+1-pnorm(1.9,mean=1.75,sd=0.15)
+
+## smaller than 1.6
+pnorm(1.6,mean=1.75,sd=0.15,lower.tail=TRUE)
+# equivalent to 
+pnorm(1.6,mean=1.75,sd=0.15)
+# because: per defaults, lower.tail is set to TRUE
+```
+
+Let's have a look at this distribution using the **dnorm()** function:
+
+```{r}
+x = seq(1,2.5,by=0.01)
+y = dnorm(x,mean=1.75,sd=0.15)
+plot(x,y,type='l',col='red',lwd=2);abline(v=c(1.6,1.9),lty=3,lwd=2)
+```
+
 4.  Let's finally look at **r- like random** functions. These, unlike the others, don't return single probabilities or values but rather generate a random distribution of values. Try to generate a normal distribution with mean = 10, sd = 5.\
-    Is it possible to generate a Poisson distribution and a binomial distribution?
+    *Is it possible to generate a Poisson distribution and a binomial distribution?*
+
+```{r}
+## normal distribution
+x = rnorm(n=1000,mean=10,sd=5)
+hist(x,breaks=20)
+```
 
 ------------------------------------------------------------------------
 
@@ -271,7 +320,7 @@ plot(x=q.theoretical, y=q.observed);abline(0,1,lty=1,lwd=2,col='red')
 
 ------------------------------------------------------------------------
 
-#### Exercise 2
+#### Exercise I
 
 1.  What is the expression of TP53 observed at 10th percentile? What is the expression of TP53 observed at 90th percentile?
 
@@ -347,9 +396,7 @@ lines(nd, col="grey", type="l")
 
 ------------------------------------------------------------------------
 
-#### Exercise 3
-
-**Save the code you use for the exercises!**
+#### Exercise II
 
 1.  A patient has convulsions and needs to be injected every time he does. Every day he has an average of 3 cases. How many syringes should the hospital prepare daily to cover 99.9% of the scenarios?
 

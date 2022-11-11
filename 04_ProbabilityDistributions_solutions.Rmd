@@ -67,9 +67,9 @@ We are going to look at them more deeply in the following.
 
 ------------------------------------------------------------------------
 
-#### Exercise 1 - Practice on the various functions
+### Practice on the various functions
 
-1.  Let's get a grasp of what these functions actually do. You should be familiar with the cumulative distribution function, let's take a look at that and its inverse first. We will work with a Normal distribution. Calculate the **cumulative probability** for the values 1,2,3,4 in three different distributions, using one of the functions described previously. Short hint: **p** like **probability**. Which function are you going to use?
+1.  Let's get a grasp of what these functions actually do. You should be familiar with the cumulative distribution function, let's take a look at that and its inverse first. We will work with a Normal distribution. Calculate the **cumulative probability** for the values 1,2,3,4 in three different distributions, using one of the functions described previously. Short hint: **p** like **cumulative P-robability**. Which function are you going to use?
 
 ```{r echo=TRUE}
 
@@ -110,7 +110,7 @@ dbinom(5, size=5, prob=0.5)
 pbinom(4, size=5, prob=0.5)
 # Remember, pbinom() returns the "cumulative probability" of ...
 
-# probability of 3 or more (beware: the argument is > 2, i.e. 3 or more)
+# Probability of 3 or more (beware: the argument is > 2, i.e. 3 or more)
 pbinom(2, size=5, prob = 0.5, lower.tail=FALSE)
 
 ```
@@ -145,7 +145,7 @@ y = dnorm(x,mean=1.75,sd=0.15)
 plot(x,y,type='l',col='red',lwd=2);abline(v=c(1.6,1.9),lty=3,lwd=2)
 ```
 
-4.  Let's finally look at **r- like random** functions. These, unlike the others, don't return single probabilities or values but rather generate a random distribution of values. Try to generate a normal distribution with mean = 10, sd = 5.\
+4.  Let's finally look at **r- like random** functions. These, unlike the others, don't return single probabilities or values but rather generate a random distribution of values. Try to generate a normal distribution with mean = 10, sd = 5.
     Is it possible to generate a Poisson distribution and a binomial distribution?
 
 ```{r}
@@ -156,7 +156,7 @@ hist(x,breaks=20)
 ## Poisson distribution: not possible, as var=mean !!
 #
 ## Binomial distribution: not possible, as we must have var < mean 
-## try with mean = 10, sd = 3
+## try instead with mean = 10, sd = 3
 # mean = Lp = 10
 # var = 10(1-p) = 3^2
 # p = 0.1, L=100
@@ -358,9 +358,7 @@ plot(x=q.theoretical, y=q.observed);abline(0,1,lty=1,lwd=2,col='red')
 
 ------------------------------------------------------------------------
 
-#### Exercise 2
-
-**Save the code you use for the exercises!**
+#### Exercise I
 
 1.  What is the expression of TP53 observed at 10th percentile? What is the expression of TP53 observed at 90th percentile?
 
@@ -448,7 +446,7 @@ lines(nd, col="grey", type="l")
 
 ------------------------------------------------------------------------
 
-#### Exercise 3
+#### Exercise II
 
 1.  A patient has convulsions and needs to be injected every time he does. Every day he has an average of 3 cases. How many syringes should the hospital prepare daily to cover 99.9% of the scenarios?
 
