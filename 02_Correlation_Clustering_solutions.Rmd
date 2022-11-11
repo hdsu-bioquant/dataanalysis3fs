@@ -63,8 +63,6 @@ The numerical columns start at column index 4 and end at column index 14. Can yo
 dat.num = dat[,4:14]
 ```
 
-
-
 # Correlation - Clustering
 
 ## 0. Recap of the last sheet
@@ -127,7 +125,6 @@ quantile(dat$stab.glu)
 4.  Use the `abline(v=…)` function to plot vertical lines on top of the histogram at the values corresponding to the quantiles you have just computed.
 5.  Repeat this with the blood pressure!
 
-
 #### SOLUTION
 
 ```{r}
@@ -142,9 +139,6 @@ hist(dat$chol);abline(v=q.chol,lty=3,lwd=2,col='red')
 
 # lwd = line width, lty = line type, col = color
 ```
-
-
-
 
 ## 3. Association between variables
 
@@ -238,7 +232,6 @@ rownames(all.cor)[row.max]
 
 ```
 
-
 ### Pairwise scatter plot
 
 Lets calculate and visualize the correlations among all our variables in the diabetes dataset
@@ -253,10 +246,9 @@ pairs(dat.num, pch=20, cex=0.5, col="grey")
 
 ## 4. Unsupervised learning - clustering
 
-**Unsupervised clustering** is one of the most basic data analysis techniques. It allows to identify groups (or clusters) or observations (here: patients) or variables. *Unsupervised* means that you are not using any prior knowledge about groups of variables or associations.  **K-means clustering** is a good example of unsupervised learning because the method categorizes sample based uniquely on the data.
+**Unsupervised clustering** is one of the most basic data analysis techniques. It allows to identify groups (or clusters) or observations (here: patients) or variables. *Unsupervised* means that you are not using any prior knowledge about groups of variables or associations. **K-means clustering** is a good example of unsupervised learning because the method categorizes sample based uniquely on the data.
 
-In this part, we will use a dataset of gene expression data from the TCGA (The Cancer Genome Atlas) project. This project has sequenced several thousand samples from cancer patients of more thatn 30 cancer types.
-We will use a subset of this data, containing 200 samples (=patients, as columns) , for which the expression of 300 genes (= rows) has been measured.
+In this part, we will use a dataset of gene expression data from the TCGA (The Cancer Genome Atlas) project. This project has sequenced several thousand samples from cancer patients of more thatn 30 cancer types. We will use a subset of this data, containing 200 samples (=patients, as columns) , for which the expression of 300 genes (= rows) has been measured.
 
 ### 4.1 Lets get started - Load data
 
@@ -276,7 +268,6 @@ brca.exp[1:10,1:10]
 ```{r}
 #brca.exp = readRDS("xxxx") # xxxx should be replaced with the path to the downloaded file!
 ```
-
 
 #### Exercise 3
 
@@ -328,19 +319,17 @@ brca.anno = readRDS(url('https://www.dropbox.com/s/9xlivejqkj77llc/brca.anno.rds
 head(brca.anno)
 ```
 
-Same here: if you have issues running the previous `readRDS` command, download [this file](https://www.dropbox.com/s/z6bzwzgzdhky1qz/brca.anno.rds?dl=1), save it on your disk and load it with 
+Same here: if you have issues running the previous `readRDS` command, download [this file](https://www.dropbox.com/s/z6bzwzgzdhky1qz/brca.anno.rds?dl=1), save it on your disk and load it with
 
 ```{r}
 ### brca.anno = readRDS(xxx)
 ```
-
 
 You can check the number of samples for each tumor type using the `table` function, applied to a specific column (here, there is only one column...)
 
 ```{r}
 table(brca.anno$HER2_status)
 ```
-
 
 ### 4.2 Data transformation
 
@@ -370,7 +359,6 @@ q95 = quantile(brca.exp,probs=0.95)
 brca.exp[brca.exp>q95] = q95
 ```
 
-
 **Homogenization and Scaling**
 
 ```{r}
@@ -383,17 +371,16 @@ brca.exp = scale(brca.exp)
 ## plotting the density
 plot(density(brca.exp))
 ```
+
 Compare to the density plot before these pre-processing steps
 
 ```{r}
 plot(density(brca.exp.original))
 ```
 
-
 ## 4.3 k-means clustering
 
 Another widely used method for grouping observations is k-means clustering. Now we will cluster our dataset using kmeans and explore the underlying structure of the data.
-
 
 ### performing k-means
 
@@ -460,8 +447,6 @@ brca.large = readRDS(url('https://www.dropbox.com/s/m6nfxul95borupz/brca.exp_lar
 
 Follow the next steps:
 
-1. use the `apply` function on all rows to compute the standard deviation of the genes using the `sd()` function
-2. use the `order(...,decreasing=TRUE)` function to determine the row index of the top 200 most variant genes
-3. redo the heatmap with these genes
-
-
+1.  use the `apply` function on all rows to compute the standard deviation of the genes using the `sd()` function
+2.  use the `order(...,decreasing=TRUE)` function to determine the row index of the top 200 most variant genes
+3.  redo the heatmap with these genes

@@ -57,8 +57,6 @@ dat = dat[-i.missing,]
 
 The numerical columns start at column index 4 and end at column index 14. Can you create a new dataframe called `dat.num` containing only the numerical columns?
 
-
-
 # Correlation - Clustering
 
 ## 0. Recap of the last sheet
