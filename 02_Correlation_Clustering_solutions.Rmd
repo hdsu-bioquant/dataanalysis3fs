@@ -290,7 +290,10 @@ apply(brca.exp,2,sd)
 # All three at once
 dim(brca.exp)
 #
-df_mean_median_sd <- data.frame(mean = apply(brca.exp,2,mean), median = apply(brca.exp,2,median),sd = apply(brca.exp,2,sd))
+df_mean_median_sd <- data.frame(
+  mean = apply(brca.exp,2,mean), 
+  median = apply(brca.exp,2,median),
+  sd = apply(brca.exp,2,sd))
 df_mean_median_sd
 ```
 
@@ -430,7 +433,7 @@ We now compute the silhouette for a specific kmeans clustering:
 
 ```{r}
 library(cluster)
-km = kmeans(x=t(brca.exp), centers = 2, nstart = 10)
+km = kmeans(x=t(brca.exp), centers = 3, nstart = 10)
 s = silhouette(km$cluster,D)
 plot(s)
 ```
