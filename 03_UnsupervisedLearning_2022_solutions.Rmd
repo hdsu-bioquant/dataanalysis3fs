@@ -189,11 +189,35 @@ legend('topright',legend=levels(brca.anno$ER_status),pch=19,col=color)
 
 3.  Extract the gene names of `brca.exp.topVar` and `brca.ex.topMAD` and check how many overlap using the `intersect` function.
 
-#### Solution
+#### SOLUTION
 
 ```{r}
-
+library(pheatmap)
+pheatmap(brca.exp.topVar, show_rownames = FALSE, show_colnames = FALSE)
 ```
+
+```{r}
+## compute the variance for all genes across all samples
+topMAD = apply(brca.exp, 1, mad)
+
+## what is the 75% quantile of the variance?
+q75m = quantile(topMAD, probs = 0.75)
+
+i.topmad = which(topMAD >= q75m)
+
+## only select the gene with a variance in the top 25%
+brca.exp.topMad = brca.exp[i.topmad,]
+dim(brca.exp.topMad)
+```
+
+
+```{r}
+top.genes.Var = rownames(brca.exp.topVar)
+top.genes.Mad = rownames(brca.exp.topMad)
+
+length(intersect(top.genes.Mad,top.genes.Var))
+```
+
 
 
 #### Exercise 2
@@ -212,7 +236,28 @@ pheatmap(d)
 
 Try different linkage methods using the `clustering_method` parameter to see if the topoly of the dendrogram changes!
 
+
+
+
 2.  Try building a distance matrix which would lead to different topologies of the dendrogram, depending on which linkage method is used! Show the dendrograms built with different linkage methods!
+
+
+#### SOLUTION
+
+```{r}
+
+d = matrix(c(0,4,2,6,
+             4,0,3,4,
+             2,3,0,1,
+             6,4,1,0),nrow=4, byrow = TRUE)
+rownames(d) = letters[1:4]
+colnames(d) = letters[1:4]
+
+# here we have 2 different topologies!
+pheatmap(d, clustering_method = 'complete')
+pheatmap(d, clustering_method = 'single')
+
+```
 
 
 #### Exercise 3
@@ -220,9 +265,88 @@ Try different linkage methods using the `clustering_method` parameter to see if 
 1.  Color the patients in the PCA plot according to `HER2_status`; you should check first how many levels this annotation has to determine how many colors you will need!
 2.  Color the patients in the PCA plot according to `Classification`; you will probably need to define some more colors... You can check available colors [here](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf)
 
+
+#### SOLUTION
+
+
+```{r}
+
+## how many levels do we have for `HER2_status`?
+
+length(levels(brca.anno$HER2_status))
+
+## 3 levels
+
+## define a color vector for annotations
+color = c('grey','red','blue')
+
+
+## the ER_status column in the annotation dataframe is a factor, with 3 levels
+## Remember that a factor will be treated as an integer number, so we can use it to select one
+## of the elements in the color vector
+cb = color[brca.anno$HER2_status]
+
+
+
+plot(pca$x[,2], pca$x[,4], 
+     col= cb, pch=19,
+     xlab='PC1',ylab='PC2',
+     main='BRCA patients according to HER2 status');
+legend('topright',
+       legend=levels(brca.anno$HER2_status),pch=19,col=color)
+```
+
+
 #### Getting further
 
 Instead of performing the k-means on the whole gene expression matrix, we can run k-means on the space in which each patient is represented by the first k principal components (available in `pca$x`)
 
 1.  Run k-means on the patients using the first 2, 4,6,... principal components (i.e. the first columns in `pca$x`)
+
+#### SOLUTION
+
+```{r}
+## Number of PCs to select
+
+n = 5
+data = pca$x[,1:n]
+
+# Silhouette and WSS plot
+fviz_nbclust(data, kmeans, method = "silhouette")
+fviz_nbclust(data, kmeans, method = "wss")
+```
+
+
+```{r}
+## Number of PCs to select
+
+n = 10
+data = pca$x[,1:n]
+
+# Silhouette and WSS plot
+fviz_nbclust(data, kmeans, method = "silhouette")
+fviz_nbclust(data, kmeans, method = "wss")
+```
+
 2.  Represent the patients in the pca plot as previously, but coloring them according to the cluster they belong to!
+
+#### SOLUTION
+
+```{r}
+## reduce the dataset to the first n PCs
+n = 5
+data = pca$x[,1:n]
+
+## perform kmeans on this new data, with k=2
+km = kmeans(data,centers=2,nstart=50)
+
+## define color vector
+
+colclust = c('red','blue')[km$cluster] 
+
+plot(pca$x[,1], pca$x[,2], 
+     col= colclust, pch=19,
+     xlab='PC1',ylab='PC2',
+     main='BRCA patients according to cluster');
+```
+
