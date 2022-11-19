@@ -262,6 +262,29 @@ It happens `r sum(!as.logical(i.ok))` times, which fits pretty well with the exp
 3.  You invited a group of 20 friends to a bar. For every member, there is an 80% chance that he/she will show up. If you want to buy a treat for all of your  friends, how many should you buy to have a 70% chance that you will have just enough for everyone?
 
 
+#### Solution
+
+```{r}
+# 1.
+pbinom(49,size=100,prob=0.5,lower.tail=FALSE)
+
+# or
+
+1-pbinom(49,size=100,prob=0.5,lower.tail=TRUE)
+
+
+# 2.
+pbinom(49,size=100,prob=2/3,lower.tail=FALSE)
+
+# or
+
+1-pbinom(49,size=100,prob=2/3,lower.tail=TRUE)
+
+# 3. 
+qbinom(0.7,size=20,prob=0.8)
+```
+
+
 ### Exercise 2
 
 You are buying 10 packs of gummy bears. You particularly like the red ones and the green ones. A pack contains 6 different colors and you expect them to be equally distributed. There are 84 pieces per 200g pack.
@@ -272,5 +295,46 @@ You are buying 10 packs of gummy bears. You particularly like the red ones and t
 
 -   for the red ones: 12 16 17 12 16 13 11 18 13 19\
 -   for the green ones: 11 10 15 16 12 14 13 10 13 17\
-    Was your selection procedure a success? In other words, is the expected value bellow (congrats!), within or above (bad luck!) the 95% CI?
+    Was your selection procedure a success? In other words, is the expected value below (congrats!), within or above (bad luck!) the 95% CI?
+
+
+#### Solution
+
+Expected amounts of red and green per pack:
+
+```{r}
+green.exp = 84/6
+red.exp = 84/6
+```
+
+
+```{r}
+
+packs = 10
+
+red.obs = c(12,16,17,12,16,13,11,18,13,19)
+green.obs = c(11,10,15,16,12,14,13,10,13,17)
+
+m.red = mean(red.obs)
+m.green = mean(green.obs)
+
+k.red = sum(red.obs)
+k.green = sum(green.obs)
+
+## confidence interval
+
+##critical value, using a t-distribution
+
+t_95 = qt(0.975,df=packs-1)
+
+m.red-t_95*sqrt(m.red)/sqrt(length(red.obs))
+m.red+t_95*sqrt(m.red)/sqrt(length(red.obs))
+
+```
+
+```{r}
+m.green-t_95*sqrt(m.green)/sqrt(length(green.obs))
+m.green+t_95*sqrt(m.green)/sqrt(length(green.obs))
+
+```
 
