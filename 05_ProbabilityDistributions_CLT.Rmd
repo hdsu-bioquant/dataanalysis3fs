@@ -5,7 +5,6 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-
 # 0. Recap of the previous Sheet
 
 In the previous Exercise Sheet we have learnt about distributions and how to use them in R. We have learned about p-, q-, d- and r- functions, the normal and the poisson distribution.
@@ -50,8 +49,7 @@ pbinom(6,size=10,prob=0.5,lower.tail=FALSE)
 
 Beware that this syntax means **strictly more than 6**, i.e. 7 or more!!
 
-> How would you compute the probability to get less than 5?
-> What would `qbinom(0.3,size=10,prob=0.5,lower.tail=FALSE) represent?
+> How would you compute the probability to get less than 5? What would \`qbinom(0.3,size=10,prob=0.5,lower.tail=FALSE) represent?
 
 ------------------------------------------------------------------------
 
@@ -67,10 +65,10 @@ The results of such experiments can be simulated using a uniform distribution
 
 ```{r}
 # Measurements with P2, varying between 1.5 µl and 2.5 µl
-P2.set1 <- sapply(1:10, function(x) {
+P2.set1 <- sapply(1:100, function(x) {
   runif(1,min = 1.5, max=2.5)
 })
-P2.set1
+#P2.set1
 ```
 
 Since each sample has one measurement, the mean of each sample is ... the measurement itself:
@@ -81,36 +79,37 @@ P2.set1.mean
 ```
 
 ```{r}
-plot(density(P2.set1.mean,bw=0.4), xlim = c(1,3),main='distribution of mean values')
+#plot(density(P2.set1.mean,bw=0.4), xlim = c(1,3),main='distribution of mean values')
+hist(P2.set1.mean)
 ```
 
 We now repeat these measurements with 5 drops in each of the 10 samples
 
 ```{r}
 N = 5
-P2.sets = lapply(1:10, function(x) {
+P2.sets = lapply(1:1000, function(x) {
   runif(N,min = 1.5, max=2.5)
 })
-P2.sets
+#P2.sets
 ```
 
 And we calculate the mean of each sample set
 
 ```{r}
 P2.mean <- sapply(P2.sets,mean)
-P2.mean
+#P2.mean
 ```
 
 How are the mean values distributed?
 
 ```{r}
-plot(density(P2.mean,bw=0.2), xlim = c(1,3), main = 'Distribution of mean values')
+#plot(density(P2.mean,bw=0.2), xlim = c(1,3), main = 'Distribution of mean values')
+hist(P2.mean)
 ```
 
 Compare this distribution of means over samples with N=5 to the distribution of means over samples with N=1. What do you notice?
 
 > What about increasing the number of drops? Try with increasing numbers of drops.
-
 
 Let's do that systematically for an increasing number of drops per sample, repeated 100 times:
 
@@ -159,7 +158,6 @@ plot(P2.exp.mean, ylab = "Mean value for P2 with increasing N",
 
 The fluctuations around the real expectation value get smaller and smaller: approximating the unknown expectation value through the mean of the sample becomes more and more accurate!
 
-
 We can also have a look at the standard deviation.
 
 ```{r}
@@ -178,7 +176,6 @@ plot(P2.exp.se, ylab = "SE value for P2",xlab = 'Sample size',pch=20)
 
 > What is the characteristics of these values? What is the main take home message?
 
-
 ------------------------------------------------------------------------
 
 # 4. Confidence interval
@@ -193,7 +190,7 @@ For example, a farmer expect to collect 75 eggs from his hens per hour.
 lambda = 75
 ```
 
-He now collect during 100 days the eggs $N=8$ times a day (each time during one hour). We want to compute the mean $m_N$ over these $N=8$ realizations and determine the 95% confidence interval, and check, how often the expectation value $\mu$ is inside the confidence interval. 
+He now collect during 100 days the eggs $N=8$ times a day (each time during one hour). We want to compute the mean $m_N$ over these $N=8$ realizations and determine the 95% confidence interval, and check, how often the expectation value $\mu$ is inside the confidence interval.
 
 Remember that the 95% CI is given by $$
 [m_N-t_{95,N-1}\frac{\sigma}{\sqrt{N}},m_N+t_{95,N-1}\frac{\sigma}{\sqrt{N}}]
@@ -248,8 +245,7 @@ It happens `r sum(!as.logical(i.ok))` times, which fits pretty well with the exp
 
 > Repeat this simulation, but now with samples of $N=24$ (again 100 times)\
 > What do you observe?\
-> How often is the true expectation value outside the CI?
-> Change to 90% CI and check if that works!
+> How often is the true expectation value outside the CI? Change to 90% CI and check if that works!
 
 ## Exercises
 
@@ -259,8 +255,7 @@ It happens `r sum(!as.logical(i.ok))` times, which fits pretty well with the exp
 
 2.  How would you simulate the effect of an unfair coin say which leads head 2/3 times? How large are the chances of getting at least 50 times head out of 100 with this coin?
 
-3.  You invited a group of 20 friends to a bar. For every member, there is an 80% chance that he/she will show up. If you want to buy a treat for all of your  friends, how many should you buy to have a 70% chance that you will have just enough for everyone?
-
+3.  You invited a group of 20 friends to a bar. For every member, there is an 80% chance that he/she will show up. If you want to buy a treat for all of your friends, how many should you buy to have a 70% chance that you will have just enough for everyone?
 
 ### Exercise 2
 
@@ -268,9 +263,8 @@ You are buying 10 packs of gummy bears. You particularly like the red ones and t
 
 1.  What is the expected amount of red or green gummy bears?
 
-2.  You selected your 10 packs according to the colors you could see in the pack. At home, you counted the following bears per pack:\
+2.  You selected your 10 packs according to the colors you could see in the pack. At home, you counted the following bears per pack:
 
 -   for the red ones: 12 16 17 12 16 13 11 18 13 19\
 -   for the green ones: 11 10 15 16 12 14 13 10 13 17\
     Was your selection procedure a success? In other words, is the expected value bellow (congrats!), within or above (bad luck!) the 95% CI?
-
