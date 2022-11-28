@@ -47,7 +47,7 @@ We could at first check how the weight values are distributed between males vs. 
 rows.men = which(dat$gender=='male')
 rows.women = which(dat$gender=='female')
 
-# Select the weigth values accordingly
+# Select the weight values accordingly
 weight.men = dat$weight[rows.men]
 weight.women = dat$weight[rows.women]
 
@@ -97,7 +97,7 @@ The function t.test() offers three **alternative** options: *two.sided*, *less* 
 Here, if we want to test whether the mean weight of the 10 chocolate bars is **different** from the expected weight of 100 g, we want to perform a *two sided* test and use the alternative *two.sided*.
 
 It is essential to **clearly formulate the H0 and H1 hypothesis**.
-There are two alternative but equivalenet ways to do so.
+There are two alternative but equivalent ways to do so.
 Either:
 
 > H0: the expectation value of the random variable "Weight of a chocolate bar" is **equal** to 100 g.
@@ -137,8 +137,9 @@ Regarding the mean weight of the males, we would like to check whether males hav
 Here as well, we will perform a one-sample test, with mu = 180.
 However, we will perform a one-sided test using the alternative option **less**.
 
-The hypotheses can be formulated as: \> H0: the expectation value of the random variable "Weight of male patients" is **equal or greater** 180.
-\> H1: the expectation value of the random variable "Weight of male patients" is **less** than 180.
+The hypotheses can be formulated as:  
+\> H0: the expectation value of the random variable "Weight of male patients" is **equal or greater** 180.  
+\> H1: the expectation value of the random variable "Weight of male patients" is **less** than 180.  
 
 How would you interpret the result with alpha = 0.05?
 
@@ -159,13 +160,14 @@ This can be tested using a *two-sample and two.tailed* t.test.
 hist(weight.men, col = rgb(red = 0,green = 0.5,blue = 1,alpha = 0.9), breaks = 15, main = "Histogram of weight", xlab = "Weight", probability = TRUE);hist(weight.women, col = rgb(red = 1,green = 0.5,blue = 0.1,alpha = 0.6), breaks = 15, add = TRUE, probability = TRUE);abline(v=c(mean.men,mean.women),lty=c(3,3),col=c("blue","darkorange"),lwd = 3);legend("topright", legend = c("men","women"), lty=c(1,1), lwd = 2, col=c("blue","orange"))
 ```
 
-The hypotheses can be formulated as: \> H0: the expectation value of the random variable "Weight of male patients" is **equal** to the expectation value of the random variable "Weight of female patients".
+The hypotheses can be formulated as:  
+\> H0: the expectation value of the random variable "Weight of male patients" is **equal** to the expectation value of the random variable "Weight of female patients".  
 \> H1: the expectation value of the random variable "Weight of male patients" is **different** from the expectation value of the random variable "Weight of female patients".
 
 How would you interpret the result with alpha = 0.05?
 
 ```{r}
-t.test(weigth.men,weight.women)
+t.test(weight.men,weight.women)
 # remember, alternative = "two.sided" per default.
 ```
 
@@ -181,15 +183,15 @@ Looking at the histogram, other observers could in principle see a difference be
 How would you interpret the result with alpha = 0.05?
 
 ```{r}
-t.test(weigth.men,weight.women, alternative = "greater")
+t.test(weight.men,weight.women, alternative = "greater")
 ```
 
 > Can you explain why the p-value of the one-tailed t.test is lower than the p-value of the two-tailed t.test?
 > What is the relation between these two values?
 
 ```{r}
-t.test(weigth.men,weight.women, alternative = "two.sided")$p.value
-t.test(weigth.men,weight.women, alternative = "greater")$p.value
+t.test(weight.men,weight.women, alternative = "two.sided")$p.value
+t.test(weight.men,weight.women, alternative = "greater")$p.value
 # divide the one by the other and see ... 
 ```
 
@@ -335,7 +337,8 @@ With a p-value \< 0.05, the data is not normally distributed!
 > We want to determine whether one of our numerical parameters is normally distributed.
 
 ```{r}
-sapply(num.dat,shapiro_test, na.rm = TRUE)
+num.dat <- dat[,c(2,3,4,5,6,8,10,11,13,14,17,18)]
+sapply(num.dat,shapiro.test)
 ```
 
 Apparently, none of the parameters is normally distributed.
