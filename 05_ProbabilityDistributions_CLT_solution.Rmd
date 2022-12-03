@@ -281,7 +281,7 @@ pbinom(49,size=100,prob=2/3,lower.tail=FALSE)
 1-pbinom(49,size=100,prob=2/3,lower.tail=TRUE)
 
 # 3. 
-qbinom(0.7,size=20,prob=0.8)
+qbinom(1,size=20,prob=0.6)
 ```
 
 
@@ -305,6 +305,7 @@ Expected amounts of red and green per pack:
 ```{r}
 green.exp = 84/6
 red.exp = 84/6
+green.exp;
 ```
 
 
@@ -331,6 +332,15 @@ m.red-t_95*sqrt(m.red)/sqrt(length(red.obs))
 m.red+t_95*sqrt(m.red)/sqrt(length(red.obs))
 
 ```
+
+
+```{r}
+m.red-t_95*sd(red.obs)/sqrt(length(red.obs))
+m.red+t_95*sd(red.obs)/sqrt(length(red.obs))
+```
+
+
+
 
 ```{r}
 m.green-t_95*sqrt(m.green)/sqrt(length(green.obs))
