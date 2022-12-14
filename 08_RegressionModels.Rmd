@@ -32,7 +32,10 @@ In this last part, we want to learn how to build a **regression model** in order
 -   **testing** the model to evaluate its performances, and also check that the assumptions of the linearity are given
 -   **predict** values based on new data points
 
-We will use again the diabetes data set, and build (1) simple linear regression models with a single explanatory variable, and (2) multiple regression models in which we use several variables. we will focus on predicting the **cholesterol level**.
+We will use again the diabetes data set, and build  
+(1) simple linear regression models with a single explanatory variable, and  
+(2) multiple regression models in which we use several variables.  
+We will focus on predicting the **cholesterol level**.
 
 # 2. Load the data and first analysis
 
@@ -46,20 +49,39 @@ We will limit the dataset to the numerical variables
 dat = tmp[,c(2,3,4,6,8,10,11,13,14,17,18)]
 head(dat)
 ```
+First, we have to perform some data cleaning and remove all patients with at least 1 "NA" 
+```{r}
+# Determine which patients have at least 1 NA
+i.na <- which( apply(dat, 1, function(x) {sum(is.na(x)) >0 }) )
+# alternative: i.na <- which( apply(dat, 1, function(x) {sum(is.na(x))}) >0 )
+#
+# Select the patients without NAs
+dat = dat[-i.na,]
+```
 
-#### Exercise set A
 
-1.  Remove all patients that have at least 1 NA in their data.
+Let's look at the correlation between variables with scatter plots!
+```{r}
+# Plot variable correlation scatterplots for all variables.
+pairs(dat,col='red', pch=20, cex = 0.5)
+```
 
-2.  Let's look at the correlation between variables with scatterplots! Plot variable correlation scatter plots for all variables.
-
-3.  That's a good overview, now make a heatmap to visualize the correlation values.
+That's a good overview, now we make a heatmap and visualize the correlation values.
+```{r}
+cor = cor(dat)
+#
+library(pheatmap)
+pheatmap(cor,
+         cluster_cols = FALSE,
+         cluster_rows = FALSE,
+         display_numbers = TRUE)
+```
 
 > What are the strongest correlations? Do they make sense?
 
 Apart from displaying the raw correlation values, we can test if any of those are **statistically significant**, i.e. if they are significantly positive (one-sided test), negative (one-sided test), or non zero (two-sided test).
 
-For example, there seems to be a positive correlation between stabilized glucose (`stab.glu`) and hip circumference.
+For example, there seems to be a positive correlation between *stabilized glucose* (stab.glu) and *hip circumference* (hip).
 
 ```{r}
 ## compute correlation
@@ -69,19 +91,13 @@ cor(dat$stab.glu,dat$hip)
 cor.test(dat$stab.glu,dat$hip)
 ```
 
-> read carefully the report, and make sure you understand this output. Check other pairs! Can you determine exactly which correlation level with n=377 patients leads to a p-value lower than 0.05? (check the formular in the slides...)
+> read carefully the report, and make sure you understand this output. Check other pairs!
 
 # 3. Univariate linear regression
 
 > What is the most promising variable to predict cholesterol level?
 
-We will use glycosilated hemoglobin (`glyhb`) as a predictor of the cholesterol level:
-
-**Beware that you have to use the dat data frame in which the rows with missing values have been removed!!** If you have not managed to do so, use the code below!
-
-```{r}
-dat = dat[apply(dat,1,function(x) {sum(is.na(x))==0}),]
-```
+We will use glycosilated hemoglobin (`glyhb`) as a predictor of the cholesterol level and the function **lm()**.
 
 ```{r}
 l.g = lm(chol ~ glyhb, data=dat)
@@ -108,7 +124,7 @@ plot(dat$glyhb,l.g$residuals,pch=20)
 
 > What is your overall opinion about the validity of the regression model here?
 
-We can now use the model to predict the cholesterol values, and compare them to the real cholesterol values, since we have the information in this dataset
+We can now use the model to predict the cholesterol values, and compare them to the real cholesterol values, since we have the information in this dataset.
 
 ```{r}
 plot(dat$chol,l.g$fitted.values,pch=20,col='blue', xlab='Real values',ylab='Predicted values');abline(0,1,col='red')
@@ -116,19 +132,13 @@ plot(dat$chol,l.g$fitted.values,pch=20,col='blue', xlab='Real values',ylab='Pred
 
 Not really super convincing, right? Let's put more information into the model!
 
-#### Exercise set B
-
-1.  Write a code to perform the regression analysis using each time a different input variable to predict cholesterol
-
-2.  Make a plot (which type?) of the F-values for these different models.
-
 #4. Multiple regression model
 
 Let us include all the information to try to predict cholesterol level:
 
 ```{r}
-l1 = lm(chol ~ .,data=dat)
-summary(l1)
+l.all = lm(chol ~ .,data=dat)
+summary(l.all)
 ```
 
 > Do you note something unexpected in this report?
@@ -140,21 +150,21 @@ We can see that the variables `weight`, `waist` and `hip` do not reach the signi
 1.  either these variables are indeed non-informative regarding the prediction of the cholesterol level
 2.  or the mutual correlation between these 3 variables interferes with the model.
 
-We can remove waist and hip for example, the redo the regression
+We can remove waist and hip for example, and redo the regression
 
 ```{r}
-l2 = lm(chol ~ stab.glu + hdl + glyhb + age + height + weight  + bp.1s + bp.1d,data=dat)
-summary(l2)
+l.less = lm(chol ~ stab.glu + hdl + glyhb + age + height + weight  + bp.1s + bp.1d,data=dat)
+summary(l.less)
 ```
 
-We can see how the `weight` variable seems indeed to contribute to the prediction of the cholesterol; the removal of the strongly correlated variables has increased its significance. It now almost reaches significance at the 5% level!
+We can see how the `weight` variable seems indeed to contribute to the prediction of the cholesterol. The removal of the strongly correlated variables has increased its significance. It now almost reaches significance at the 5% level!
 
 > Check the result of the F-test to compare both models!
 
 We can now check if the prediction are better that with the univariate model
 
 ```{r}
-plot(dat$chol,l2$fitted.values,pch=20,col='blue', xlab='Real values',ylab='Predicted values');abline(0,1,col='red')
+plot(dat$chol,l.less$fitted.values,pch=20,col='blue', xlab='Real values',ylab='Predicted values');abline(0,1,col='red')
 ```
 
 Better? I would say so... To determine the accuracy, we can compute the so called **root mean squared error (RMSE)**
@@ -165,7 +175,7 @@ $$
 
 ```{r}
 n = nrow(dat)
-rmse = sqrt(1/n*sum(l2$residuals^2))
+rmse = sqrt(1/n*sum(l.less$residuals^2))
 rmse
 ```
 
@@ -192,8 +202,8 @@ summary(l.train)
 We can compute the RMSE for the training dataset
 
 ```{r}
-n = nrow(dat.train)
-rmse.train = sqrt(1/n*sum(l.train$residuals^2))
+n.train = nrow(dat.train)
+rmse.train = sqrt(1/n.train*sum(l.train$residuals^2))
 rmse.train
 ```
 
@@ -206,9 +216,9 @@ pred = predict(l.train,newdata = dat.test)
 and compute the rmse:
 
 ```{r}
-n = nrow(dat.test)
+n.test = nrow(dat.test)
 residuals = dat.test$chol - pred
-rmse.test = sqrt(1/n*sum(residuals^2))
+rmse.test = sqrt(1/n.test*sum(residuals^2))
 rmse.test
 ```
 
@@ -216,21 +226,46 @@ Of course, the RMSE is higher on the test dataset, since this does not include t
 
 An important topic here is **feature selection**, i.e. finding the optimal and minimal set of explanatory variables that allow to predict well the output variable.
 
-#### Exercise set C
 
-1.  Repeat the train/test split 10 times with each time a different random split; plot the 10 rmse.train and rmse.test values!
+We now repeat the train/test split 10 times with each time a different random split; plot the 10 rmse.train and rmse.test values!
+```{r}
+set.seed(345)
+RMSE <- sapply(1:10, function(x) {
+  i.train = sample (1:nrow(dat),200)
+  ##
+  dat.train = dat[i.train,]
+  dat.test = dat[-i.train,]
+  ##
+  l.train = lm(chol ~ stab.glu + hdl + glyhb + age + height + weight  + bp.1s + bp.1d,data=dat.train)
+  ##
+  n.train = nrow(dat.train)
+  rmse.train = sqrt(1/n.train*sum(l.train$residuals^2))
+  ##
+  pred = predict(l.train,newdata = dat.test)
+  ##
+  n.test = nrow(dat.test)
+  residuals = dat.test$chol - pred
+  rmse.test = sqrt(1/n.test*sum(residuals^2))
+  RMSE <- c(rmse.train,rmse.test)
+  RMSE
+})
+#
+#
+plot(RMSE[1,], pch = 19, col = "orange", xlab = "Iteration", ylab = "RMSE values", ylim = c(min(RMSE),max(RMSE)+2));points(RMSE[2,], pch = 19, col = "purple");legend("topright", legend = c("rmse.train", "rmse.test"), col = c("orange","purple"), pch = c(19,19));abline(h = mean(RMSE[1,]), lty = 2, col = "orange");abline(h = mean(RMSE[2,]), lty = 2, col = "purple")
+```
 
-2.  Imagine a strategy to, starting from the model with all variables, remove iteratively some variable using a specific criterion (e.g. p-value of F-test)
 
-3.  Implement this strategy in R, and produce some plots to monitor how the performance of the model evolves with different sets of variables!
+------------------------------------------------------------------------
 
-# 4. Using PCA to determine independent variables
+# Going further
+
+### Using PCA to determine independent variables
 
 To solve the problem of correlated variables, we can compute principal components on all explanatory variables
 
 ```{r}
 # remove the first column as this is the output variable
-pca = prcomp(dat[,-1])
+pca = prcomp(dat[,-1]) # col 1 = "chol"
 summary(pca)
 ```
 
@@ -244,6 +279,15 @@ Now perform the multiple linear regression model using the PCs as explanatory va
 
 > Check that the PCs are not correlated to each other any more by reproducing the correlation analysis we did at the beginning and display the correlation heatmap.
 
+```{r}
+cor.pca <- cor(pca$x)
+pheatmap(cor.pca,
+         cluster_cols = FALSE,
+         cluster_rows = FALSE,
+         display_numbers = TRUE)
+```
+
+
 Let us now run the linear regression with all PCs:
 
 ```{r}
@@ -253,4 +297,31 @@ summary(l.pca)
 
 > Produce the barplots to display the definition of the significant principal components in this analysis
 
+```{r, fig.width=12, fig.height=10}
+par(mfrow=c(3,2),mar=c(2,4,2,2))
+barplot(pca$rotation[,1],horiz=TRUE,main='PC1',col='red');barplot(pca$rotation[,3],horiz=TRUE,main='PC3',col='red');barplot(pca$rotation[,4],horiz=TRUE,main='PC4',col='red');barplot(pca$rotation[,5],horiz=TRUE,main='PC5',col='red');barplot(pca$rotation[,6],horiz=TRUE,main='PC6',col='red');barplot(pca$rotation[,10],horiz=TRUE,main='PC10',col='red')
+```
+
+
 > Reproduce this analysis for the variable `glyhb`
+
+```{r, fig.width=12, fig.height=10}
+l.glyhb = lm(glyhb ~ .,data=dat)
+summary(l.glyhb)
+#
+pca.glyhb = prcomp(dat[,-4]) # col 4 = "glyhb"
+summary(pca.glyhb)
+#
+cor.pca.glyhb <- cor(pca.glyhb$x)
+pheatmap(cor.pca.glyhb,
+         cluster_cols = FALSE,
+         cluster_rows = FALSE,
+         display_numbers = TRUE)
+#
+l.pca.glyhb = lm(dat$glyhb ~ pca.glyhb$x)
+summary(l.pca.glyhb)
+#
+layout(matrix(c(1:3)))
+par(las=2, cex=1);barplot(pca.glyhb$rotation[,1],horiz=TRUE,main='PC1',col='red');barplot(pca.glyhb$rotation[,3],horiz=TRUE,main='PC3',col='red');barplot(pca.glyhb$rotation[,5],horiz=TRUE,main='PC5',col='red')
+#
+```

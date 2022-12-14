@@ -15,7 +15,7 @@ all.aml.anno = read.delim("http://bioinfo.ipmb.uni-heidelberg.de/crg/datascience
 #
 # we convert all.aml into a data matrix rather than a data.frame
 all.aml = data.matrix(all.aml)
-i.all = which(all.aml.anno$ALL.AML=='AML') ## we extract the row numbers of the ALL patients
+i.all = which(all.aml.anno$ALL.AML=='ALL') ## we extract the row numbers of the ALL patients
 ```
 
 # 1. Introduction and Objectives
@@ -264,6 +264,7 @@ wK = 15
 wE = 16
 s = 3.5
 n = 10
+alpha = 0.05
 
 ### 1000 samples of n Emperor penguins each
 mean_weights  = sapply(1:1000,function(i) {mean(rnorm(n,mean=wE,sd=s))})
@@ -292,9 +293,10 @@ The next code helps visualize what is going on, you can play with the parameters
 source('http://bioinfo.ipmb.uni-heidelberg.de/crg/datascience3fs/practicals/helper.R')
 
 wK = 15
-wE = 16
+wE = 17
 s = 3.5
 n = 10
+alpha = 0.01
 
 h0h1(wK,wE,s,n,alpha)
 ```
