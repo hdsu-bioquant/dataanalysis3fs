@@ -179,7 +179,6 @@ Principal component analysis represents each data point (here: patient) in a new
 
 ```{r}
 ## Initial data
-
 head(t(brca.exp.topVar))
 ```
 
@@ -209,7 +208,6 @@ legend('topleft',legend=levels(brca.anno$ER_status),pch=19,col=color)
 > Choose different PCs for this plot. Can you still observe the two clusters corresponding to the ER_status of the patients? 
 
 
-
 ## EXERCISES
 
 #### Exercise 1
@@ -221,6 +219,33 @@ legend('topleft',legend=levels(brca.anno$ER_status),pch=19,col=color)
 2.  Repeat the selection of top variable genes, but using the median absolute deviation (or MAD, see lecture) using the `mad()` function instead of the `sd()` function, and store into a matrix `brca.ex.topMAD`
 
 3.  Extract the gene names of `brca.exp.topVar` and `brca.ex.topMAD` and check how many overlap using the `intersect()` function.
+
+```{r}
+### SOLUTION
+
+# 1.
+library(pheatmap)
+pheatmap(brca.exp.topVar, show_rownames = FALSE, show_colnames = FALSE)
+
+# 2.
+## compute the MAD for all genes across all samples
+topMAD = apply(brca.exp, 1, mad)
+
+## what is the 75% quantile?
+q75m = quantile(topMAD, probs = 0.75)
+
+i.topmad = which(topMAD >= q75m)
+
+## only select the genes in the top 25%
+brca.exp.topMad = brca.exp[i.topmad,]
+dim(brca.exp.topMad)
+
+# 3.
+top.genes.Var = rownames(brca.exp.topVar)
+top.genes.Mad = rownames(brca.exp.topMad)
+
+length(intersect(top.genes.Mad,top.genes.Var))
+```
 
 
 #### Exercise 2 - Hierarchical clustering
@@ -241,12 +266,67 @@ Try different linkage methods using the `clustering_method` parameter to see if 
 
 2.  Try building a distance matrix which would lead to different topologies of the dendrogram, depending on which linkage method is used! Show the dendrograms built with different linkage methods!
 
+```{r}
+### SOLUTION
+
+d = matrix(c(0,4,2,6,
+             4,0,3,4,
+             2,3,0,1,
+             6,4,1,0),nrow=4, byrow = TRUE)
+rownames(d) = letters[1:4]
+colnames(d) = letters[1:4]
+
+# here we have 2 different topologies!
+pheatmap(d, clustering_method = 'complete')
+pheatmap(d, clustering_method = 'single')
+
+```
 
 #### Exercise 3 - PCA
 
 1.  Display the patients in the first two principal components (available in `pca$x`) using `plot()`. Color the patients in the PCA plot according to `HER2_status`; you should check first how many levels this annotation has using `levels()` to determine how many colors you will need!
 
 2.  Color the patients in the PCA plot according to `Classification`; you will probably need to define some more colors... You can check available colors [here](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf)
+
+
+```{r}
+### SOLUTION
+
+# 1.
+## how many levels do we have for `HER2_status`?
+length(levels(brca.anno$HER2_status)) # 3 levels
+
+## define a color vector for annotations
+color = c('grey','red','blue')
+
+## the HER2_status column in the annotation dataframe is a factor, with 3 levels
+## Remember that a factor will be treated as an integer number, so we can use it to select one of the elements in the color vector
+cb = color[brca.anno$HER2_status]
+
+plot(pca$x[,1], pca$x[,2], 
+     col= cb, pch=19,
+     xlab='PC1',ylab='PC2',
+     main='BRCA patients according to HER2 status');
+legend('topleft',
+       legend=levels(brca.anno$HER2_status),pch=19,col=color)
+
+
+# 2. 
+length(levels(brca.anno$Classification)) # 5 levels
+
+## define a color vector for annotations
+color = c('grey','red','blue', "green", "purple")
+
+## select elements of the color vector according to the Classification
+cb = color[brca.anno$Classification]
+
+plot(pca$x[,1], pca$x[,2], 
+     col= cb, pch=19,
+     xlab='PC1',ylab='PC2',
+     main='BRCA patients according to Classification');
+legend('topleft',
+       legend=levels(brca.anno$Classification),pch=19,col=color)
+```
 
 
 #### Going further *(expert)* 
@@ -257,4 +337,61 @@ Instead of performing the k-means on the whole gene expression matrix, we can ru
 *Hint*: run a `sapply` loop with the `kmeans()` function and choose the WSS from the `$tot.withinss` attribute (you can refer to the end of last week's exercise sheet 02 for an example). Plot the WSS using the `plot()` function. 
 
 2.  Represent the patients in the PCA plot as previously, but color them according to the cluster they belong to! Run kmeans with two clusters for this and choose the cluster assignment from the `$cluster` attribute. 
+
+
+```{r}
+### SOLUTION
+
+# 1. 
+
+## Number of PCs to select
+n = 5 # you can choose different values for n, depending on the number of PCs that you want to select
+data = pca$x[,1:n]
+
+# we can run a loop to see how the within sum of squares (WSS) evolves (see last week`s exercise sheet): 
+wss = sapply(1:10,function(k) { 
+  kmeans(data, centers = k, nstart = 10)$tot.withinss
+})
+
+plot(1:10, wss, type='b',pch=19,xlab="Number of clusters K",
+     ylab="Total within-clusters sum of squares")
+
+
+
+## We can also use the function `fviz_nbclust()` from the "factoextra" package
+## Therefore, you have to first install the corresponding package by typing `install.packages("factoextra")` in the console
+## Then, the package has to be activated: 
+library(factoextra)
+
+## Number of PCs to select
+n = 5 # you can choose different values for n, depending on the number of PCs that you want to select
+data = pca$x[,1:n]
+
+# Silhouette and WSS plot
+fviz_nbclust(data, kmeans, method = "wss")
+fviz_nbclust(data, kmeans, method = "silhouette")
+```
+
+```{r}
+
+# 2.
+
+## reduce the dataset to the first n PCs
+n = 5
+data = pca$x[,1:n]
+
+## perform kmeans on this new data, with k=2
+km = kmeans(data,centers=2,nstart=50)
+
+## define the color vector
+colclust = c('red','blue')[km$cluster] 
+
+plot(pca$x[,1], pca$x[,2], 
+     col= colclust, pch=19,
+     xlab='PC1',ylab='PC2',
+     main='BRCA patients according to cluster');
+legend('topleft',
+       legend=c("Cluster 1", "Cluster 2"), pch=19, col=c('red','blue'))
+```
+
 

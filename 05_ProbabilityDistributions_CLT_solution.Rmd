@@ -5,10 +5,9 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-
 # 0. Recap of the previous Sheet
 
-In the previous Exercise Sheet we have learnt about distributions and how to use them in R. We have learned about p-, q-, d- and r- functions, the normal and the poisson distribution.
+In the previous Exercise Sheet we have learnt about distributions and how to use them in R. We have learned about **p-, q-, d- and r- functions**, the normal and the poisson distribution.
 
 ------------------------------------------------------------------------
 
@@ -36,22 +35,22 @@ The design of the experiment is as follows -
 -   Each experiment has just two outcomes
 -   The probability of success is constant and does not change with experiments
 
-We can for example compute the probability of having 7 heads in a series of 10 throws:
+We can for example compute the probability of having 7 heads in a series of 10 throws of a coin:
 
 ```{r}
-dbinom(7,size=10,prob = 0.5)
+dbinom(x=7, size=10, prob = 0.5) 
+# x = number of successes; size = number of trials; prob = probability of success on each trial
 ```
 
-Or we can compute what the probability is to get 7 or more heads:
+Or we can compute what the probability is to get 7 or more heads using the function `pbinom()`. Remember that the parameter "lower.tail" is used to specify whether to calculate the probability of observing x or fewer successes (if `lower.tail = TRUE`) or the probability of observing more than x successes (`lower.tail = FALSE`):
 
 ```{r}
-pbinom(6,size=10,prob=0.5,lower.tail=FALSE)
+pbinom(6,size=10,prob=0.5,lower.tail=FALSE) 
 ```
 
 Beware that this syntax means **strictly more than 6**, i.e. 7 or more!!
 
-> How would you compute the probability to get less than 5?
-> What would `qbinom(0.3,size=10,prob=0.5,lower.tail=FALSE) represent?
+> How would you compute the probability to get less than 5? What would `qbinom(0.3,size=10,prob=0.5,lower.tail=FALSE)` represent?
 
 ------------------------------------------------------------------------
 
@@ -61,75 +60,81 @@ In this chapter, we will test the central limit theorem using the example of pip
 
 Imagine you have a set of three pipets made of a P2 (up to 2 µl), P10 and P200 pipets. You would like to test your pipets and check their accuracy. To do that, you weight drops of water corresponding to 2 µl with the P2, 5 µl with the P10 and 50 µl with the P200.
 
-To proceed, you first consider samples of 1 measurement each. You perform 10 measurements.
+To proceed, you first consider 100 samples of 1 measurement each.
 
-The results of such experiments can be simulated using a uniform distribution
+The results of such experiments can be simulated using a **uniform distribution**:
 
 ```{r}
 # Measurements with P2, varying between 1.5 µl and 2.5 µl
-P2.set1 <- sapply(1:10, function(x) {
-  runif(1,min = 1.5, max=2.5)
-})
-P2.set1
+N = 1     # 1 measurement per sample
+
+# for each of the 100 samples, we draw randomly one measurement from a uniform distribution with min=1.5 and max=2.5:
+P2.set1 <- sapply(1:100, function(x) {  
+  runif(N, min = 1.5, max=2.5)
+})        
+
+head(P2.set1)
 ```
 
 Since each sample has one measurement, the mean of each sample is ... the measurement itself:
 
 ```{r}
 P2.set1.mean = sapply(P2.set1,mean)
-P2.set1.mean
+head(P2.set1.mean)
 ```
+
+Let's have a look at the distribution of these mean values:
 
 ```{r}
 plot(density(P2.set1.mean,bw=0.4), xlim = c(1,3),main='distribution of mean values')
+hist(P2.set1.mean)
 ```
 
-We now repeat these measurements with 5 drops in each of the 10 samples
+We now repeat these measurements with 5 drops in each of the 100 samples:
 
 ```{r}
-N = 5
-P2.sets = lapply(1:10, function(x) {
-  runif(N,min = 1.5, max=2.5)
+N = 5     # 5 measurements per sample
+
+P2.sets = lapply(1:100, function(x) {
+  runif(N, min = 1.5, max=2.5)
 })
-P2.sets
+head(P2.sets)
 ```
 
-And we calculate the mean of each sample set
+And we calculate the mean of each sample set:
 
 ```{r}
 P2.mean <- sapply(P2.sets,mean)
-P2.mean
+head(P2.mean)
 ```
 
 How are the mean values distributed?
 
 ```{r}
 plot(density(P2.mean,bw=0.2), xlim = c(1,3), main = 'Distribution of mean values')
+hist(P2.mean)
 ```
 
-Compare this distribution of means over samples with N=5 to the distribution of means over samples with N=1. What do you notice?
+> Compare this distribution of means over samples with N=5 to the distribution of means over samples with N=1. What do you notice?
 
 > What about increasing the number of drops? Try with increasing numbers of drops.
 
-
-Let's do that systematically for an increasing number of drops per sample, repeated 100 times:
+Let's do that systematically for an increasing number of drops per sample, repeated 100 times (100 samples):
 
 ```{r}
-# Number of samples
-N = c(2,5,10,20,50,100,500)
-
+N = c(2,5,10,20,50,100,500)   # increasing number of drops per sample
 
 lapply(N,function(n) {
   P2.exp = lapply(1:100, function(x) {
     runif(n,min = 1.5, max=2.5)
-    #rnorm(n,mean=2)
   }) 
   # Calculate the mean
   P2.exp.mean = sapply(P2.exp,mean)
+  # plot the distribution of the mean values 
   plot(density(P2.exp.mean), 
      type='l',
      xlab = "volume", 
-     main = paste("Sample mean, n=",n),
+     main = paste("Sample mean, n =",n),
      xlim = c(1.5,2.5))
 })
 
@@ -137,19 +142,20 @@ lapply(N,function(n) {
 
 > It starts to look a bit clearer, doesn't it? Which kind if distribution is it?
 
-We can have a look at the distribution of the mean values for increasing N.
+We can have a look at the distribution of the mean values for an increasing sample size N (again, we consider 100 samples for each):
 
 ```{r}
-# Number of samples
-N <- 1:100 # Goes from 1 to 100
-#
-# Calculate the mean
+# sample size
+N <- 1:100 # Goes from 1 to 100 (measurements per sample)
+
+# Calculate the mean of the samples
 P2.exp.mean <- sapply(N,function(n) {
   mean(sapply(1:100, function(y){
-    mean(runif(n,min = 1.5, max=2.5)) # to get 100 mean values for each N
-  }) )                                                   # to get the mean of the distribution
-})
-# Plot the distribution of the mean
+    mean(runif(n,min = 1.5, max=2.5)) # to get the mean value of the N measurements for each of the 100 samples
+  })) # to get the mean of the distribution (of the sample's mean values)
+}) 
+
+# Plot the distribution of the means for increasing sample size
 plot(P2.exp.mean, ylab = "Mean value for P2 with increasing N", 
      pch=20,
      ylim = c(1.9,2.1),xlab='Sample size');abline(h =2, col = "blue", lty = 2)
@@ -159,31 +165,30 @@ plot(P2.exp.mean, ylab = "Mean value for P2 with increasing N",
 
 The fluctuations around the real expectation value get smaller and smaller: approximating the unknown expectation value through the mean of the sample becomes more and more accurate!
 
-
-We can also have a look at the standard deviation.
+We can also have a look at the standard deviation:
 
 ```{r}
-# Number of samples
+# sample size
 N <- 1:100 # Goes from 1 to 100
 #
 # Calculate the sd of the mean values (is actually the standard error!)
 P2.exp.se <- sapply(N,function(n) {
   sd(sapply(1:100, function(y){
-    mean(runif(n,min = 1.5, max=2.5)) # to get 100 mean values for each N
-  }) )                                                   # to get the sd of the distribution (of the mean values)
+    mean(runif(n,min = 1.5, max=2.5))  # to get the mean value of the N measurements for each of the 100 samples
+  }) )                                                   # to get the sd of the distribution (of the sample's mean values)
 })
-# Plot the distribution of the mean
+
+# Plot the distribution of the standard error (SE)
 plot(P2.exp.se, ylab = "SE value for P2",xlab = 'Sample size',pch=20)
 ```
 
 > What is the characteristics of these values? What is the main take home message?
 
-
 ------------------------------------------------------------------------
 
 # 4. Confidence interval
 
-The confidence interval describes the interval containing the (unknown) expectation value of a distribution with 95% confidence. This means that out of 100 random realizations of this random variable, the true expectation value $\mu$ will indeed be in this interval.
+The **confidence interval** describes the interval containing the (unknown) expectation value of a distribution with 95% confidence. This means that out of 100 random realizations of this random variable, the true expectation value $\mu$ will indeed be in this interval.
 
 Let us try a simulation: we consider a random variable distributed according to a Poisson distribution $$P(x) = \frac{{e^{ - \lambda } \lambda ^x }}{{x!}}$$ Here, *we know the true value of the expectation value*. We want to get an estimate for $\lambda$, and check if the confidence interval contains the true expectation value.
 
@@ -193,11 +198,9 @@ For example, a farmer expect to collect 75 eggs from his hens per hour.
 lambda = 75
 ```
 
-He now collect during 100 days the eggs $N=8$ times a day (each time during one hour). We want to compute the mean $m_N$ over these $N=8$ realizations and determine the 95% confidence interval, and check, how often the expectation value $\mu$ is inside the confidence interval. 
+He now collect during 100 days the eggs $N=8$ times a day (each time during one hour). We want to compute the mean $m_N$ over these $N=8$ realizations and determine the 95% confidence interval, and check, how often the expectation value $\mu$ is inside the confidence interval.
 
-Remember that the 95% CI is given by $$
-[m_N-t_{95,N-1}\frac{\sigma}{\sqrt{N}},m_N+t_{95,N-1}\frac{\sigma}{\sqrt{N}}]
-$$ where $t_{95,N-1}$ is the critical value for the $t$-distribution with $n-1$ degrees of freedom.
+Remember that the 95% CI is given by $$[m_N-t_{95,N-1}\frac{\sigma}{\sqrt{N}},m_N+t_{95,N-1}\frac{\sigma}{\sqrt{N}}]$$ where $t_{95,N-1}$ is the critical value for the $t$-distribution with $n-1$ degrees of freedom.
 
 Let's start by creating our samples:
 
@@ -209,20 +212,18 @@ N = 8
 X = lapply(1:100,function(i) {rpois(N,lambda = lambda)})
 ```
 
-Now, we calculate the mean and the sandard deviation of the respective samples:
+Now, we calculate the mean and the standard deviation of the respective samples:
 
 ```{r}
-# we compute the means
+# we compute the sample means
 Xm = sapply(X,mean)
 # and the sample standard deviations
 Xsd = sapply(X,sd) 
-#
 ```
 
 Next, we determine the upper and lower bounds of the 95% CI. Remember that the confidence interval is based on a $t$-distribution. The degrees of freedom of this distribution is the sample size -1 ($N$-1=7 in this case)
 
 ```{r}
-
 df = N-1
 tc = qt(c(0.975),df) # this is the critical value for the t-distribution for df = N-1 degrees of freedom and 95% CI
 
@@ -238,8 +239,8 @@ col = c('red','blue')
 ## vector of TRUE/FALSE if the real expectation value lambda is inside the interval
 i.ok =  as.factor(Xl < lambda & Xh > lambda)
 
-## plot the 
-plot(Xm,ylim=c(50,100),pch=20,ylab="",main=paste("Means values and confidence intervals,N=",N));abline(h=lambda,lty=3);lapply(1:length(Xl),function(i) {points(c(i,i),c(Xl[i],Xh[i]),type="l",col=col[i.ok[i]],lwd=2)})
+## plot the mean values and the confidence interval
+plot(Xm,ylim=c(50,100),pch=20,ylab="",main=paste("Mean values and confidence intervals,N=",N));abline(h=lambda,lty=3);lapply(1:length(Xl),function(i) {points(c(i,i),c(Xl[i],Xh[i]),type="l",col=col[i.ok[i]],lwd=2)})
 ```
 
 Here, the red/blue bars represent the confidence interval, the black dot the mean of the sample values, and the dotted line at `\lambda` represents the true expectation value. Whenever the true expectation value is within the CI, the bar is blue, if not, the bar is red How often is the true expectation value outside the CI? Count the red bars!
@@ -248,42 +249,34 @@ It happens `r sum(!as.logical(i.ok))` times, which fits pretty well with the exp
 
 > Repeat this simulation, but now with samples of $N=24$ (again 100 times)\
 > What do you observe?\
-> How often is the true expectation value outside the CI?
-> Change to 90% CI and check if that works!
+> How often is the true expectation value outside the CI? Change to 90% CI and check if that works!
 
-## Exercises
+# Exercises
 
-### Exercise 1
+### Exercise 1 - Binomial distribution
 
 1.  How large are the chances of getting at least 50 times head out of 100?
 
 2.  How would you simulate the effect of an unfair coin say which leads head 2/3 times? How large are the chances of getting at least 50 times head out of 100 with this coin?
 
-3.  You invited a group of 20 friends to a bar. For every member, there is an 80% chance that he/she will show up. If you want to buy a treat for all of your  friends, how many should you buy to have a 70% chance that you will have just enough for everyone?
-
-
-#### Solution
+3.  You invited a group of 20 friends to a bar. For every member, there is an 80% chance that he/she will show up. If you want to buy a treat for all of your friends, how many should you buy to have a 70% chance that you will have just enough for everyone?
 
 ```{r}
+#### Solution
+
 # 1.
 pbinom(49,size=100,prob=0.5,lower.tail=FALSE)
-
 # or
-
 1-pbinom(49,size=100,prob=0.5,lower.tail=TRUE)
-
 
 # 2.
 pbinom(49,size=100,prob=2/3,lower.tail=FALSE)
-
 # or
-
 1-pbinom(49,size=100,prob=2/3,lower.tail=TRUE)
 
 # 3. 
-qbinom(1,size=20,prob=0.6)
+qbinom(0.7,size=20,prob=0.8)
 ```
-
 
 ### Exercise 2
 
@@ -291,26 +284,22 @@ You are buying 10 packs of gummy bears. You particularly like the red ones and t
 
 1.  What is the expected amount of red or green gummy bears?
 
-2.  You selected your 10 packs according to the colors you could see in the pack. At home, you counted the following bears per pack:\
+2.  You selected your 10 packs according to the colors you could see in the pack. At home, you counted the following bears per pack:
 
 -   for the red ones: 12 16 17 12 16 13 11 18 13 19\
 -   for the green ones: 11 10 15 16 12 14 13 10 13 17\
     Was your selection procedure a success? In other words, is the expected value below (congrats!), within or above (bad luck!) the 95% CI?
 
-
+```{r}
 #### Solution
 
-Expected amounts of red and green per pack:
-
-```{r}
+# 1.
+# Expected amounts of red and green per pack:
 green.exp = 84/6
 red.exp = 84/6
-green.exp;
-```
+green.exp; red.exp
 
-
-```{r}
-
+# 2.
 packs = 10
 
 red.obs = c(12,16,17,12,16,13,11,18,13,19)
@@ -319,32 +308,14 @@ green.obs = c(11,10,15,16,12,14,13,10,13,17)
 m.red = mean(red.obs)
 m.green = mean(green.obs)
 
-k.red = sum(red.obs)
-k.green = sum(green.obs)
-
-## confidence interval
-
 ##critical value, using a t-distribution
-
 t_95 = qt(0.975,df=packs-1)
 
-m.red-t_95*sqrt(m.red)/sqrt(length(red.obs))
+## confidence interval (poisson distribution)
+
+m.red-t_95*sqrt(m.red)/sqrt(length(red.obs)) 
 m.red+t_95*sqrt(m.red)/sqrt(length(red.obs))
 
-```
-
-
-```{r}
-m.red-t_95*sd(red.obs)/sqrt(length(red.obs))
-m.red+t_95*sd(red.obs)/sqrt(length(red.obs))
-```
-
-
-
-
-```{r}
 m.green-t_95*sqrt(m.green)/sqrt(length(green.obs))
 m.green+t_95*sqrt(m.green)/sqrt(length(green.obs))
-
 ```
-
