@@ -54,11 +54,16 @@ x <- c(1:5)
 sapply(x, sqrt)
 ```
 
-Instead of using built-in functions, we can also write our own little function and combine it with `sapply()`: 
+Instead of using built-in functions, we can also write our own little function and combine it with `sapply()`, `apply()` or `lapply()` (see below): 
 
 ```{r}
+# sapply()
 z <- c(1:5)
 sapply(z, function(x) {x*2}) 
+
+# apply()
+Mat 
+apply(Mat, 1, function(x) {sum(x*2)}) #the operation is performed on every row of "Mat"; every element is multiplied by two and the sum of the row is calculated
 ```
 
 Besides, we can use `sapply()` for a **list**, for example to calculate the length of every element using `length()`: 
