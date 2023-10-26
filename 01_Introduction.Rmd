@@ -3,6 +3,9 @@ title: "Data Analysis - Exercice Sheet 1"
 author: "Carl Herrmann, Maïwen Caudron-Herger"
 date: "`r Sys.Date()`"
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: sentence
 ---
 
 ```{r knitr_init, echo=FALSE, cache=FALSE}
@@ -29,11 +32,16 @@ In this practical session you will
 
 Throughout this course we will use a common **diabetes dataset** to practically implement the concepts taught during the lectures.
 
-Our dataset has various pathophysiological measurements of \> 400 individuals. Clinical parameters like blood glucose levels, cholesterol levels, age, body size, weight, blood pressure etc have been measured. We will use this dataset to explore the statistical properties of each variable (like its distribution, mean value etc) and question relations between variables (like is blood glucose level correlated with obesity?).
+Our dataset has various pathophysiological measurements of \> 400 individuals.
+Clinical parameters like blood glucose levels, cholesterol levels, age, body size, weight, blood pressure etc have been measured.
+We will use this dataset to explore the statistical properties of each variable (like its distribution, mean value etc) and question relations between variables (like is blood glucose level correlated with obesity?).
 
 # 2. Lets get started - Load the data
 
-The diabetes dataset, which we will be using throughout this practical will be downloaded from an online repository. We will load that into R and have a sneak peek into how it looks like with the console. In the following you will see several functions that give us information about our dataset. You will also see how the "\$" sign is used to access specific columns of out dataframe.
+The diabetes dataset, which we will be using throughout this practical will be downloaded from an online repository.
+We will load that into R and have a sneak peek into how it looks like with the console.
+In the following you will see several functions that give us information about our dataset.
+You will also see how the "\$" sign is used to access specific columns of out dataframe.
 
 ```{r}
 dat = read.delim('https://tinyurl.com/y4fark9g', stringsAsFactors = FALSE) # Load the dataset
@@ -65,7 +73,8 @@ nrow(dat)
 colnames(dat) # Similarly rownames() for rows
 ```
 
-Probably you are confused about what these column names mean. For more description on these values [look here](https://biostat.app.vumc.org/wiki/pub/Main/DataSets/Cdiabetes.html)
+Probably you are confused about what these column names mean.
+For more description on these values [look here](https://biostat.app.vumc.org/wiki/pub/Main/DataSets/Cdiabetes.html)
 
 **3.** How do we extract the minimum and maximum age of patients in our dataset
 
@@ -85,21 +94,28 @@ summary(dat)
 
 > Can you explain what you see?
 
-You have just seen a lot of new functions. If you're wondering how any of them work, you can use the function `help()` or the sign `?` in the console to read more about any function in the bottom right pane. For example:
+You have just seen a lot of new functions.
+If you're wondering how any of them work, you can use the function `help()` or the sign `?` in the console to read more about any function in the bottom right pane.
+For example:
 
 ```{r eval = FALSE}
 help("max")
 ?max
 ```
 
-will both get you more information on this function. Remember that every function will automatically print its result in the console pane, unless it is assigned to a variable. You can try by running the following line of code:
+will both get you more information on this function.
+Remember that every function will automatically print its result in the console pane, unless it is assigned to a variable.
+You can try by running the following line of code:
 
 ```{r eval = FALSE}
 max(dat$age)
 MaxAge = max(dat$age)
 ```
 
-See the difference? Now that value is saved into this new variable. Before we keep going, here is a quick reminder of how indexing and slicing works in R. If you're already familiar with it you can skip the next chunk.
+See the difference?
+Now that value is saved into this new variable.
+Before we keep going, here is a quick reminder of how indexing and slicing works in R.
+If you're already familiar with it you can skip the next chunk.
 
 ```{r eval = FALSE}
 
@@ -120,11 +136,13 @@ dat$age[1:3] # Returns the first three values
 
 ```
 
-Feel free to play around with this syntax until you feel comfortable with it. You can open a window with `View(dat)` to compare your results.
+Feel free to play around with this syntax until you feel comfortable with it.
+You can open a window with `View(dat)` to compare your results.
 
 # 3. Data cleanup
 
-Very often the first thing one needs to do before any data science project is to clean up the raw data and transform it into a format that is readily understood and easy to use for all downstream analysis. This process usually involves --
+Very often the first thing one needs to do before any data science project is to clean up the raw data and transform it into a format that is readily understood and easy to use for all downstream analysis.
+This process usually involves --
 
 -   Removing empty value rows/columns
 -   Removing unused or unnecessary rows/columns
@@ -139,7 +157,8 @@ Lets do some clean up of our own diabetes data
 3.  We will also remove the column `time.ppn` which will not be required in our analysis
 4.  We will reorder the columns of the data such that all the qualitative and quantitative values are separated. Among the quantitative values we will keep related variables together
 
-To perform this cleanup, we need a couple of important functions, that we will first discuss. If you went through "00_Advanced_Data_Manipulation_in_R.Rmd" from last week, you might already be familiar with some of these functions:
+To perform this cleanup, we need a couple of important functions, that we will first discuss.
+If you went through "00_Advanced_Data_Manipulation_in_R.Rmd" from last week, you might already be familiar with some of these functions:
 
 -   `which`
 -   `apply`
@@ -148,7 +167,8 @@ To perform this cleanup, we need a couple of important functions, that we will f
 
 ## which
 
-`which()` is used on a data structure and generates a data structure with the positions of the values that satisfy a condition you specify. Let's look at an example.
+`which()` is used on a data structure and generates a data structure with the positions of the values that satisfy a condition you specify.
+Let's look at an example.
 
 ```{r, eval = TRUE}
 # Let's create a vector
@@ -168,12 +188,15 @@ Players[which(Points > 3)]
 
 ```
 
-See? We selected all names form the "Players" vector that correspond to more than three points in the "Points" vector.\ 
-The type of condition can also vary, depending also on the data type in your dataset. Just remember that it must have a **boolean** output (TRUE/FALSE) to be used in `which()`, e.g. `is.na()` (see below) can be used inside a `which()` function.
+See?
+We selected all names form the "Players" vector that correspond to more than three points in the "Points" vector. 
+The type of condition can also vary, depending also on the data type in your dataset.
+Just remember that it must have a **boolean** output (TRUE/FALSE) to be used in `which()`, e.g. `is.na()` (see below) can be used inside a `which()` function.
 
 ## apply
 
-`apply()` is used to apply a function to an entire dataset at once and outputs a vector of results. Later, we will use it like this:
+`apply()` is used to apply a function to an entire dataset at once and outputs a vector of results.
+Later, we will use it like this:
 
 ```{r eval = FALSE}
 rmv.rows = apply(dat, 1,function(x) {sum(is.na(x))})
@@ -200,21 +223,24 @@ y = NA
 is.na(y)
 ```
 
-See? We can do this with vectors:
+See?
+We can do this with vectors:
 
 ```{r}
 is.na(dat$glyhb)
 ```
 
-> Understand how it works? 
+> Understand how it works?
 
-This is a vector of **logical** (or boolean) values. Let's go one step further:
+This is a vector of **logical** (or boolean) values.
+Let's go one step further:
 
 ```{r}
 sum(is.na(dat$glyhb))
 ```
 
-What just happened? Because we have used the `sum()` function, R has transformed `TRUE` into `1` and `FALSE` into `0`...
+What just happened?
+Because we have used the `sum()` function, R has transformed `TRUE` into `1` and `FALSE` into `0`...
 
 ## %in%
 
@@ -233,7 +259,8 @@ which(c('a','b','e') %in% c('a','b','c','d','f'))
 ## Ready for doing the cleanup!!
 
 The first column of the dataframe is the column with the name "id".
-The rows are just numbered, without names. We are going to rename the rows using the column "id".
+The rows are just numbered, without names.
+We are going to rename the rows using the column "id".
 
 ```{r}
 # set the row names using the column id
@@ -269,8 +296,8 @@ Now lets look at our cleaned data:
 summary(dat)
 ```
 
-The ordering and selection of columns looks right, however it seems that there are certain rows that have missing values (like `glyhb` column has 13 `NA` values). Lets remove all rows with any missing value: 
-We go through each row and sum up all missing values (NA values).
+The ordering and selection of columns looks right, however it seems that there are certain rows that have missing values (like `glyhb` column has 13 `NA` values).
+Lets remove all rows with any missing value: We go through each row and sum up all missing values (NA values).
 Remember, 1 row = 1 patient.
 For example, the 8th row (Patient with the number 1015) has a missing value in the column "bp.1s".
 For this patient and column, the function `is.na()` will return the value "TRUE".
@@ -284,6 +311,7 @@ For example, TRUE + TRUE = 2.
 Therefore, it is possible to use the function `sum()` on the result of the function `is.na()` applied on each row of the dataframe "dat".
 
 For the first row alone, this would be obtained like this:
+
 ```{r}
 sum(is.na(dat[1,]))
 # This is calculating the number of NAs in the first row of the table "dat".
@@ -299,30 +327,38 @@ is.na(dat[1,])
 Now, we would like to repeat the same for each patient, i.e. for each line.
 This could be performed by a **for loop**, but there is a function for this kind of repetitive processes on either rows or columns.
 We are going to use the function `apply()`.
-`apply()` is used with the parameter 1 for rows and the parameter 2 for columns. Since we'd like to calculate the number of NAs per row, we use the parameter 1 in the functions. The sum of NAs is stored in the variable rmv.rows - our next aim being to remove those rows with NAs.
+`apply()` is used with the parameter 1 for rows and the parameter 2 for columns.
+Since we'd like to calculate the number of NAs per row, we use the parameter 1 in the functions.
+The sum of NAs is stored in the variable rmv.rows - our next aim being to remove those rows with NAs.
+
 ```{r}
 rmv.rows = apply(dat, 1, function(x) {sum(is.na(x))}) 
 ```
 
 "rmv.rows" is a vector containing the number of NAs for each row.
 
-> What should be the expected length of this vector? Think about the dimensions of the dataframe "dat"
+> What should be the expected length of this vector?
+> Think about the dimensions of the dataframe "dat"
 
 What are the number of missing values for the first rows?
 We can use for this the function `head()`.
+
 ```{r}
 head(rmv.rows)
 ```
 
 Next, we'd like to determine the index of the rows containing missing values.
-For these rows, the variable rmv.rows will have values > 0. Correct?
+For these rows, the variable rmv.rows will have values \> 0.
+Correct?
 Again, we can use the function `which()` for this task.
+
 ```{r}
 i.missing = which(rmv.rows >0) # This is returning the index of the rows with 1 or more missing values.
 head(i.missing)
 ```
 
 Accordingly, patient 1015 (8th row) has missing values.
+
 ```{r}
 # You can type the following to check:
 dat["1015",]
@@ -333,13 +369,16 @@ sum(is.na(dat["1015",]))
 
 Now, we can remove the patients with missing values.
 We proceed as before and use the "-" sign:
+
 ```{r}
 dat = dat[-i.missing,] 
 ```
 
 > How many patients were removed because they were associated with missing values?
 
-Finally, we will turn all variables with `character` type (i.e. character strings) into **factors**. This will turn character variables into **nominal/ordinal** variable types. We will make the columns "Location" and "Gender" nominal and the "frame" ordinal.
+Finally, we will turn all variables with `character` type (i.e. character strings) into **factors**.
+This will turn character variables into **nominal/ordinal** variable types.
+We will make the columns "Location" and "Gender" nominal and the "frame" ordinal.
 
 ```{r}
 # Making data nominal
@@ -350,7 +389,7 @@ dat$gender = factor(dat$gender)
 dat$frame = factor(dat$frame, levels=c("small", "medium", "large")) 
 ```
 
-> Do you remember the difference between nominal and ordinal variables? 
+> Do you remember the difference between nominal and ordinal variables?
 
 Now our cleaned data has no missing values, columns are cleanly ordered and each column is in the right format
 
@@ -366,7 +405,7 @@ In this section you will learn the essential functions to plot data in an intuit
 
 ### Histograms
 
-We can plot the column "stab.glu" as a histogram using the `hist()` function: 
+We can plot the column "stab.glu" as a histogram using the `hist()` function:
 
 ```{r eval = TRUE}
 hist(dat$stab.glu, xlab ="Stabilized Glucose concentration in blood", main ="Glucose concentration")
@@ -374,13 +413,14 @@ hist(dat$stab.glu, xlab ="Stabilized Glucose concentration in blood", main ="Glu
 
 Remember that you can type `help("hist")` in the Console to see more details about the histogram function in R.
 
-> Add the parameter `breaks = 50` in the above lines of code and see what happens. Try different values for `breaks` like `10, 20, 75, 100` and try to interpret the differences.
-Is this a good or bad thing about histograms in general? 
-
+> Add the parameter `breaks = 50` in the above lines of code and see what happens.
+> Try different values for `breaks` like `10, 20, 75, 100` and try to interpret the differences.
+> Is this a good or bad thing about histograms in general?
 
 ### Density plots
 
-For density plots, we use the `density()` function to estimate the probability density function for a given variable. With its return value, we can build the final density plot using the `plot()` function: 
+For density plots, we use the `density()` function to estimate the probability density function for a given variable.
+With its return value, we can build the final density plot using the `plot()` function:
 
 ```{r eval = TRUE}
 d <- density(dat$stab.glu)
@@ -389,7 +429,7 @@ plot(d, xlab ="Stabilized Glucose concentration in blood", main ="Glucose concen
 
 ### Boxplots
 
-The `boxplot()` function produces a boxplot for a given variable: 
+The `boxplot()` function produces a boxplot for a given variable:
 
 ```{r eval = TRUE}
 boxplot(dat$stab.glu, xlab ="Stabilized Glucose concentration in blood", horizontal = TRUE)
@@ -446,7 +486,9 @@ plot(q.men, q.women, pch=20)
 
 ### Going further: making fancy plots!
 
-You don't have to understand the code below in detail. Instead, you can just check the resulting plot. If you have questions, use `help()` for further information on a specific function or let us know.
+You don't have to understand the code below in detail.
+Instead, you can just check the resulting plot.
+If you have questions, use `help()` for further information on a specific function or let us know.
 
 ```{r, eval=TRUE}
 library(vioplot)
@@ -470,13 +512,17 @@ boxplot(dat$stab.glu, xlab ="Stabilized Glucose concentration in blood", horizon
 abline(v=summary(dat$stab.glu)[2:5], col = c("blue", "red", "black", "orange"), lty=2)
 ```
 
-> Which do you think is a better plot for visualizing data distribution? What are the advantages and disadvantages of each of these plots?
+> Which do you think is a better plot for visualizing data distribution?
+> What are the advantages and disadvantages of each of these plots?
 
-Once again, we are looking at a lot of new functions. `hist()`, `plot()`, `vioplot()` and `boxplot()` all serve to visualize data in different ways. Make sure you understand how to read them, use the lecture material if you have difficulties. The `par()` function, which is short for "parameters", is an often recurring function that sets graphic parameters such as font size, margins size, colors etc. for the following plots. Try to learn more about it with `help("par")` and then try plotting the same data with different parameters. Regardless of what you are plotting, `par()` will always help you get the plot you want!
+Once again, we are looking at a lot of new functions.
+`hist()`, `plot()`, `vioplot()` and `boxplot()` all serve to visualize data in different ways.
+Make sure you understand how to read them, use the lecture material if you have difficulties.
+The `par()` function, which is short for "parameters", is an often recurring function that sets graphic parameters such as font size, margins size, colors etc. for the following plots.
+Try to learn more about it with `help("par")` and then try plotting the same data with different parameters.
+Regardless of what you are plotting, `par()` will always help you get the plot you want!
 
-
-
-# Exercises 
+# Exercises
 
 #### Exercise 1
 
@@ -485,7 +531,6 @@ Once again, we are looking at a lot of new functions. `hist()`, `plot()`, `viopl
 2.  Print out the first three column names of "dat" using `colnames()`.
 
 3.  Print out the last element in the last column of "dat" using the `dim()` function instead of using numerals.
-
 
 #### Exercise 2
 
@@ -497,12 +542,15 @@ Mat = matrix(data = c(2,4,7,1,6,3,9,5,3), ncol = 3, nrow = 3)
 
 2.  Add one line of code that prints out the results from exercise 1 that are greater than 4.5 by using the `which()` function
 
-
 #### Exercise 3
 
 1.  Visualize the cholesterol levels of all patients with a histogram using the `hist()` function.
 
-2.  Visualize the cholesterol levels of all **male** patients with a histogram using `hist()`.\ 
-*(expert):* Mark the median, first and third quantile with lines using `abline()`. Then mark median, first and third quantile for **female** patients in the same graph with a different color. What can you tell from the differences in these values?
+2.  Visualize the cholesterol levels of all **male** patients with a histogram using `hist()`. 
+    *(expert):* Mark the median, first and third quantile with lines using `abline()`.
+    Then mark median, first and third quantile for **female** patients in the same graph with a different color.
+    What can you tell from the differences in these values?
 
-3.  Use the `qqplot()` function to plot waist against hip, height against hip and chol against hip in a QQ-plot. Can you correctly interpret these plots? How are those distributions different?
+3.  Use the `qqplot()` function to plot waist against hip, height against hip and chol against hip in a QQ-plot.
+    Can you correctly interpret these plots?
+    How are those distributions different?
