@@ -543,8 +543,8 @@ Mat[i.top]
 1.  Visualize the cholesterol levels of all patients with a histogram using the `hist()` function.
 
 2.  Visualize the cholesterol levels of all **male** patients with a histogram using `hist()`. 
-    *(expert):* Mark the median, first and third quantile with lines using `abline()`.
-    Then mark median, first and third quantile for **female** patients in the same graph with a different color.
+    *(expert):* Mark the median, first and third quartile with lines using `abline()`.
+    Then mark median, first and third quartile for **female** patients in the same graph with a different color.
     What can you tell from the differences in these values?
 
 3.  Use the `qqplot()` function to plot waist against hip, height against hip and chol against hip in a QQ-plot.
