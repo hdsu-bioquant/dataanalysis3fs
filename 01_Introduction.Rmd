@@ -420,7 +420,7 @@ Now we can use the function `qqnorm()` to generate the **QQ-plot** of this distr
 qqnorm(dat$bp.1s)
 ```
 
-Using the additional command `qqline()`, we can add a straight line that goes through the first and third quantiles:
+Using the additional command `qqline()`, we can add a straight line that goes through the first and third quartile:
 
 ```{r eval = TRUE}
 qqnorm(dat$bp.1s); qqline(dat$bp.1s)
@@ -472,8 +472,8 @@ Mat = matrix(data = c(2,4,7,1,6,3,9,5,3), ncol = 3, nrow = 3)
 1.  Visualize the cholesterol levels of all patients with a histogram using the `hist()` function.
 
 2.  Visualize the cholesterol levels of all **male** patients with a histogram using `hist()`. 
-    *(expert):* Mark the median, first and third quantile with lines using `abline()`.
-    Then mark median, first and third quantile for **female** patients in the same graph with a different color.
+    *(expert):* Mark the median, first and third quartile with lines using `abline()`.
+    Then mark median, first and third quartile for **female** patients in the same graph with a different color.
     What can you tell from the differences in these values?
 
 3.  Use the `qqplot()` function to plot waist against hip, height against hip and chol against hip in a QQ-plot.
