@@ -53,19 +53,6 @@ dat = dat[-i.missing,]
 
 ```
 
-The numerical columns start at column index 4 and end at column index 14. We now create a new data frame called "dat.num" containing only the numerical columns: 
-
-```{r}
-dat.num = dat[, 4:14]
-summary(dat.num)
-```
-
-# Correlation - Clustering
-
-## 0. Recap of the last sheet
-
-We have looked at a dataset of diabetes patients and used functions to clean it up of missing data and visualize the cleaned up data.
-
 **Recommendation:** in order to avoid going through several excercise sheets in the future to perform the data cleaning, create now a R file where you save all of the code that we use to manipulate our data.\ 
 You can also save the environment containing all the needed variables as an .RData file or separately save a variable of interest. For example, the dataframe "dat" (after all cleaning steps):
 
@@ -78,6 +65,20 @@ Whenever you need it, you can load the dataframe using the function `load()`.
 ```{r, eval= FALSE}
 load("dat.RData")
 ```
+
+
+The numerical columns start at column index 4 and end at column index 14. We now create a new data frame called "dat.num" containing only the numerical columns: 
+
+```{r}
+dat.num = dat[, 4:14]
+summary(dat.num)
+```
+
+# Correlation - Clustering
+
+## 0. Recap of the last sheet
+
+We have looked at a dataset of diabetes patients and used functions to clean it up of missing data and visualize the cleaned up data.
 
 ## 1. Objectives
 
