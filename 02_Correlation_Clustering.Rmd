@@ -53,8 +53,7 @@ dat = dat[-i.missing,]
 
 ```
 
-**Recommendation:** in order to avoid going through several excercise sheets in the future to perform the data cleaning, create now a R file where you save all of the code that we use to manipulate our data.\ 
-You can also save the environment containing all the needed variables as an .RData file or separately save a variable of interest. For example, the dataframe "dat" (after all cleaning steps):
+**Recommendation:** in order to avoid going through several excercise sheets in the future to perform the data cleaning, create now a R file where you save all of the code that we use to manipulate our data.  You can also save the environment containing all the needed variables as an .RData file or separately save a variable of interest. For example, the dataframe "dat" (after all cleaning steps):
 
 ```{r, eval= FALSE}
 save(dat, file = "dat.RData") #save the data frame "dat" as an .Rdata file
@@ -66,8 +65,7 @@ Whenever you need it, you can load the dataframe using the function `load()`.
 load("dat.RData")
 ```
 
-
-The numerical columns start at column index 4 and end at column index 14. We now create a new data frame called "dat.num" containing only the numerical columns: 
+The numerical columns start at column index 4 and end at column index 14. We now create a new data frame called "dat.num" containing only the numerical columns:
 
 ```{r}
 dat.num = dat[, 4:14]
@@ -165,7 +163,6 @@ pairs(dat.num, pch=20, cex=0.5, col="grey")
 > Which correlations did you expect to see and what were novel? Can you explain the relation you observe between `hdl, chol and ratio`. Remember that `ratio = chol/hdl` [see here](https://biostat.app.vumc.org/wiki/pub/Main/DataSets/Cdiabetes.html)
 
 > Associations are among the simplest forms of structure in the data! It is important to remember that *Association does not imply correlation* and *Correlation does not imply causation*. Take a look at this page to view few common logical fallacies. [see here](https://en.wikipedia.org/wiki/Fallacy)
-
 
 ## 4. Unsupervised learning - clustering
 
@@ -321,8 +318,6 @@ plot(s)
 
 > Check the average silhouette values at the bottom; repeat this for other values of k
 
-
-
 ## Exercises
 
 #### Exercise 1 - Quantiles and Histograms
@@ -335,16 +330,13 @@ plot(s)
 
 4.  Use the `abline(v=…)` function to plot vertical lines on top of the histogram at the values corresponding to the quantiles you have just computed.
 
-
-
 #### Exercise 2 - Correlations
 
 1.  Is there an association between "hip" and "waist" of the data frame "dat"? Use the `plot()` function to do a scatter plot of the **values** and of the **ranks** (determine the ranks with the `rank()` function). Compute both the **pearson** and **spearman** correlation values.
 
-2.  Use the numerical dataframe "dat.num", and apply the function `cor()` **directly** on this data frame: `cor(dat.num)` . What happens? What is the output? Store the result of this command in a variable named "all.cor".\ 
-Plot a heatmap of these results using the `pheatmap()` function from the "pheatmap" package. Remember that you first have to activate this package using `library("pheatmap")`.
+2.  Use the numerical dataframe "dat.num", and apply the function `cor()` **directly** on this data frame: `cor(dat.num)` . What happens? What is the output? Store the result of this command in a variable named "all.cor".  Plot a heatmap of these results using the `pheatmap()` function from the "pheatmap" package. Remember that you first have to activate this package using `library("pheatmap")`.
 
-3. Find the **highest** and **lowest** Pearson correlation value of the result from exercise 2.2. To which pair of variables do they correspond? Plot the corresponding scatter plots using `plot()`! *Hint*: Before finding the highest Pearson correlation value, use the `diag()` function to set all diagonal values (=1) of "all.cor" to "NA".
+3.  Find the **highest** and **lowest** Pearson correlation value of the result from exercise 2.2. To which pair of variables do they correspond? Plot the corresponding scatter plots using `plot()`! *Hint*: Before finding the highest Pearson correlation value, use the `diag()` function to set all diagonal values (=1) of "all.cor" to NA.
 
 #### Exercise 3
 
@@ -373,4 +365,3 @@ Follow the next steps:
 2.  use the `order(...,decreasing=TRUE)` function to determine the row index of the top 200 most variant genes.
 
 3.  Calculate the pairwise correlations of these genes using `cor()` and plot again the heatmap with these genes using `pheatmap()` (see exercise 2.2).
-

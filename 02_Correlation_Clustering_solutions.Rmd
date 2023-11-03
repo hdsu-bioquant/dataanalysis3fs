@@ -53,7 +53,19 @@ dat = dat[-i.missing,]
 
 ```
 
-The numerical columns start at column index 4 and end at column index 14. We now create a new data frame called "dat.num" containing only the numerical columns: 
+**Recommendation:** in order to avoid going through several excercise sheets in the future to perform the data cleaning, create now a R file where you save all of the code that we use to manipulate our data.  You can also save the environment containing all the needed variables as an .RData file or separately save a variable of interest. For example, the dataframe "dat" (after all cleaning steps):
+
+```{r, eval= FALSE}
+save(dat, file = "dat.RData") #save the data frame "dat" as an .Rdata file
+```
+
+Whenever you need it, you can load the dataframe using the function `load()`.
+
+```{r, eval= FALSE}
+load("dat.RData")
+```
+
+The numerical columns start at column index 4 and end at column index 14. We now create a new data frame called "dat.num" containing only the numerical columns:
 
 ```{r}
 dat.num = dat[, 4:14]
@@ -65,19 +77,6 @@ summary(dat.num)
 ## 0. Recap of the last sheet
 
 We have looked at a dataset of diabetes patients and used functions to clean it up of missing data and visualize the cleaned up data.
-
-**Recommendation:** in order to avoid going through several excercise sheets in the future to perform the data cleaning, create now a R file where you save all of the code that we use to manipulate our data.\ 
-You can also save the environment containing all the needed variables as an .RData file or separately save a variable of interest. For example, the dataframe "dat" (after all cleaning steps):
-
-```{r, eval= FALSE}
-save(dat, file = "dat.RData") #save the data frame "dat" as an .Rdata file
-```
-
-Whenever you need it, you can load the dataframe using the function `load()`.
-
-```{r, eval= FALSE}
-load("dat.RData")
-```
 
 ## 1. Objectives
 
@@ -122,10 +121,12 @@ Often a common step during any data analysis project is to find associations bet
 Let us start by producing a **scatter plot** between some pairs of variables:
 
 ```{r, eval = TRUE}
-plot(dat$stab.glu,dat$glyhb,
+plot(#dat$stab.glu,dat$glyhb,
+  dat$hdl,dat$ratio,
      pch=20,
-     xlab='Stabilized glucose',
-     ylab='Glycosylated hemoglobin'
+  xlab='Stab Glu', ylab='Ratio'
+     #xlab='Stabilized glucose',
+     #ylab='Glycosylated hemoglobin'
      )
 ```
 
@@ -164,7 +165,6 @@ pairs(dat.num, pch=20, cex=0.5, col="grey")
 > Which correlations did you expect to see and what were novel? Can you explain the relation you observe between `hdl, chol and ratio`. Remember that `ratio = chol/hdl` [see here](https://biostat.app.vumc.org/wiki/pub/Main/DataSets/Cdiabetes.html)
 
 > Associations are among the simplest forms of structure in the data! It is important to remember that *Association does not imply correlation* and *Correlation does not imply causation*. Take a look at this page to view few common logical fallacies. [see here](https://en.wikipedia.org/wiki/Fallacy)
-
 
 ## 4. Unsupervised learning - clustering
 
@@ -271,7 +271,7 @@ We use the function `kmeans()` in R. You can check the options and usage in the 
 
 ```{r}
 km = kmeans(x=t(brca.exp), 
-            centers = 2, 
+            centers = 3, 
             nstart = 10)
 
 ```
@@ -320,7 +320,6 @@ plot(s)
 
 > Check the average silhouette values at the bottom; repeat this for other values of k
 
-
 ## Exercises
 
 #### Exercise 1 - Quantiles and Histograms
@@ -332,9 +331,6 @@ plot(s)
 3.  Plot the values of cholesterol as a histogram using the `hist()` function
 
 4.  Use the `abline(v=…)` function to plot vertical lines on top of the histogram at the values corresponding to the quantiles you have just computed.
-
-
-
 
 ```{r}
 #### SOLUTION
@@ -355,10 +351,9 @@ hist(dat$chol);abline(v=q.chol,lty=3,lwd=2,col='red')
 
 1.  Is there an association between "hip" and "waist" of the data frame "dat"? Use the `plot()` function to do a scatter plot of the **values** and of the **ranks** (determine the ranks with the `rank()` function). Compute both the **pearson** and **spearman** correlation values.
 
-2.  Use the numerical dataframe "dat.num", and apply the function `cor()` **directly** on this data frame: `cor(dat.num)` . What happens? What is the output? Store the result of this command in a variable named "all.cor".\ 
-Plot a heatmap of these results using the `pheatmap()` function from the "pheatmap" package. Remember that you first have to activate this package using `library("pheatmap")`.
+2.  Use the numerical dataframe "dat.num", and apply the function `cor()` **directly** on this data frame: `cor(dat.num)` . What happens? What is the output? Store the result of this command in a variable named "all.cor".  Plot a heatmap of these results using the `pheatmap()` function from the "pheatmap" package. Remember that you first have to activate this package using `library("pheatmap")`.
 
-3. Find the **highest** and **lowest** Pearson correlation value of the result from exercise 2.2. To which pair of variables do they correspond? Plot the corresponding scatter plots using `plot()`! *Hint*: Before finding the highest Pearson correlation value, use the `diag()` function to set all diagonal values (=1) of "all.cor" to "NA".
+3.  Find the **highest** and **lowest** Pearson correlation value of the result from exercise 2.2. To which pair of variables do they correspond? Plot the corresponding scatter plots using `plot()`! *Hint*: Before finding the highest Pearson correlation value, use the `diag()` function to set all diagonal values (=1) of "all.cor" to NA.
 
 ```{r}
 #### SOLUTION
@@ -431,7 +426,6 @@ apply(brca.exp,2,median)
 apply(brca.exp,2,sd)
 
 # All three at once
-dim(brca.exp)
 #
 df_mean_median_sd <- data.frame(
   mean = apply(brca.exp,2,mean), 
@@ -453,7 +447,6 @@ plot(density(M.genes))
 S = mean(s.genes)
 sum(s.genes<S)/length(s.genes)
 ```
-
 
 ## Going further...
 
@@ -483,4 +476,3 @@ brca.top = brca.large[i.top,]
 cor.top = cor(t(brca.top)) #transpose to calculate the correlation among genes
 pheatmap(cor.top)
 ```
-
