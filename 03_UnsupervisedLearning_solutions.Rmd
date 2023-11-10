@@ -160,7 +160,7 @@ summary(pca)
 
 > What would happen if you would not transpose the matrix with t(...) in the prcomp function?
 
-Principal components are ranked by the amount of variance that they explain. This can be visualized using a **scree plot**, indicating how much variance each PC explains: the proportion of **standard deviation** explained by each principal component is contained in the `pca$sdev` vector:
+Principal components are ranked by the amount of variance that they explain. This can be visualized using a **scree plot**, indicating how much variance each PC explains: the  **standard deviation** explained by each principal component is contained in the `pca$sdev` vector:
 
 ```{r}
 pca$sdev
@@ -268,7 +268,6 @@ Try different linkage methods using the `clustering_method` parameter to see if 
 
 ```{r}
 ### SOLUTION
-
 d = matrix(c(0,4,2,6,
              4,0,3,4,
              2,3,0,1,
