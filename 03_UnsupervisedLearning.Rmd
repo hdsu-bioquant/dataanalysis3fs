@@ -218,7 +218,7 @@ legend('topleft',legend=levels(brca.anno$ER_status),pch=19,col=color)
 
 1.  Make a heatmap of the reduced matrix "brca.exp.topVar" using the `pheatmap()` function of the `pheatmap` library. Check for parameters that might change the style of the heatmap (column names, row names, etc..). How is this heatmap different from the heatmap in section 2?
 
-2.  Repeat the selection of top variable genes, but using the median absolute deviation (or MAD, see lecture) using the `mad()` function instead of the `sd()` function, and store into a matrix `brca.ex.topMAD`
+2.  Repeat the selection of top variable genes (apply the same quantile used to generate "brca.exp.topVar"), but using the median absolute deviation (or MAD, see lecture) using the `mad()` function instead of the `sd()` function, and store into a matrix `brca.ex.topMAD`
 
 3.  Extract the gene names of `brca.exp.topVar` and `brca.ex.topMAD` and check how many overlap using the `intersect()` function.
 
