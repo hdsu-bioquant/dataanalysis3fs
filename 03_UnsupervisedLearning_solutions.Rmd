@@ -20,7 +20,6 @@ opts_knit$set(width=120)
 
 ```
 
-
 ```{r, echo=FALSE, eval = TRUE}
 
 #### This is all pre-processing of the BRCA dataset
@@ -57,8 +56,7 @@ brca.exp = scale(brca.exp)
 
 In the last sheet we have kept working with our diabetes dataset by learning how to **measure centrality** and other statistical information such as **quantiles**. Furthermore, we have learned functions to measure correlation between variables and explored different methods to do so. Finally, on a new dataset, we have moved over to the concept of unsupervised learning and used one of its most simple but effective methods, k-means clustering.
 
-**Recommendation:** in order to avoid going through several exercise sheets in the future create now a R file where you save all of the code from the previous chunk that we use to download and prepare our data. \ 
-You can also save the environment containing all the needed variables as an .RData file or separately save a variable of interest as an .rds file. To save your environment, you can use the save icon of the environment panel, and later load this environment using `load()`. You can save a specific variable, for example the dataset "brca.exp" (after all cleaning steps) like this:
+**Recommendation:** in order to avoid going through several exercise sheets in the future create now a R file where you save all of the code from the previous chunk that we use to download and prepare our data.   You can also save the environment containing all the needed variables as an .RData file or separately save a variable of interest as an .rds file. To save your environment, you can use the save icon of the environment panel, and later load this environment using `load()`. You can save a specific variable, for example the dataset "brca.exp" (after all cleaning steps) like this:
 
 ```{r, eval= FALSE}
 saveRDS(brca.exp, file = "brca_exp.rds") #save the dataset "brca.exp" as an .rds file
@@ -106,7 +104,6 @@ brca.exp.topVar = brca.exp[i.topvar,]
 dim(brca.exp.topVar) # 250 genes and 200 samples
 ```
 
-
 ### Computing the correlation between all patients (columns)
 
 ```{r}
@@ -142,10 +139,9 @@ pheatmap(cor.mat,annotation_row = brca.anno,
          show_rownames = FALSE, show_colnames = FALSE)
 ```
 
-> How would you interpret this dendrogram? Do the clusters you observe make any sense? What are the parameters by which the samples cluster together? How many meaningful clusters can you observe? Do you see any relation between the distribution of the data and your clusters ? 
+> How would you interpret this dendrogram? Do the clusters you observe make any sense? What are the parameters by which the samples cluster together? How many meaningful clusters can you observe? Do you see any relation between the distribution of the data and your clusters ?
 
 > The function `pheatmap` accepts a parameter clustering_method to indicate alternative linkage methods; try other linkage methods (check which are available with the pheatmap help page, which can be accessed by typing `?pheatmap` in the console!)
-
 
 # 3. Dimensionality reduction - PCA
 
@@ -156,11 +152,11 @@ pca = prcomp(t(brca.exp.topVar), center = FALSE, scale = FALSE) # We set these a
 summary(pca)
 ```
 
-> How many principal components do you obtain? Compare this to the dimension of the matrix using the `dim()` function! 
+> How many principal components do you obtain? Compare this to the dimension of the matrix using the `dim()` function!
 
 > What would happen if you would not transpose the matrix with t(...) in the prcomp function?
 
-Principal components are ranked by the amount of variance that they explain. This can be visualized using a **scree plot**, indicating how much variance each PC explains: the  **standard deviation** explained by each principal component is contained in the `pca$sdev` vector:
+Principal components are ranked by the amount of variance that they explain. This can be visualized using a **scree plot**, indicating how much variance each PC explains: the **standard deviation** explained by each principal component is contained in the `pca$sdev` vector:
 
 ```{r}
 pca$sdev
@@ -205,8 +201,7 @@ plot(pca$x[,1], pca$x[,2],
 legend('topleft',legend=levels(brca.anno$ER_status),pch=19,col=color)
 ```
 
-> Choose different PCs for this plot. Can you still observe the two clusters corresponding to the ER_status of the patients? 
-
+> Choose different PCs for this plot. Can you still observe the two clusters corresponding to the ER_status of the patients?
 
 ## EXERCISES
 
@@ -247,7 +242,6 @@ top.genes.Mad = rownames(brca.exp.topMad)
 length(intersect(top.genes.Mad,top.genes.Var))
 ```
 
-
 #### Exercise 2 - Hierarchical clustering
 
 In section 2, we have computed a correlation matrix, and used this matrix to build a clustering tree.
@@ -286,7 +280,6 @@ pheatmap(d, clustering_method = 'single')
 1.  Display the patients in the first two principal components (available in `pca$x`) using `plot()`. Color the patients in the PCA plot according to `HER2_status`; you should check first how many levels this annotation has using `levels()` to determine how many colors you will need!
 
 2.  Color the patients in the PCA plot according to `Classification`; you will probably need to define some more colors... You can check available colors [here](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf)
-
 
 ```{r}
 ### SOLUTION
@@ -327,16 +320,13 @@ legend('topleft',
        legend=levels(brca.anno$Classification),pch=19,col=color)
 ```
 
-
-#### Going further *(expert)* 
+#### Going further *(expert)*
 
 Instead of performing the k-means on the whole gene expression matrix, we can run k-means on the space in which each patient is represented by the first k principal components (available in `pca$x`)
 
-1.  Run k-means with different numbers of clusters (1-10) on the patients using the first 2, 4, 6,... principal components (i.e. the first columns of `pca$x`). Use the elbow method to evaluate how the within sum of squares (WSS) evolves. What is the optimal number of clusters? 
-*Hint*: run a `sapply` loop with the `kmeans()` function and choose the WSS from the `$tot.withinss` attribute (you can refer to the end of last week's exercise sheet 02 for an example). Plot the WSS using the `plot()` function. 
+1.  Run k-means with different numbers of clusters (1-10) on the patients using the first 2, 4, 6,... principal components (i.e. the first columns of `pca$x`). Use the elbow method to evaluate how the within sum of squares (WSS) evolves. What is the optimal number of clusters? *Hint*: run a `sapply` loop with the `kmeans()` function and choose the WSS from the `$tot.withinss` attribute (you can refer to the end of last week's exercise sheet 02 for an example). Plot the WSS using the `plot()` function.
 
-2.  Represent the patients in the PCA plot as previously, but color them according to the cluster they belong to! Run kmeans with two clusters for this and choose the cluster assignment from the `$cluster` attribute. 
-
+2.  Represent the patients in the PCA plot as previously, but color them according to the cluster they belong to! Run kmeans with two clusters for this and choose the cluster assignment from the `$cluster` attribute.
 
 ```{r}
 ### SOLUTION
@@ -392,5 +382,3 @@ plot(pca$x[,1], pca$x[,2],
 legend('topleft',
        legend=c("Cluster 1", "Cluster 2"), pch=19, col=c('red','blue'))
 ```
-
-
