@@ -205,7 +205,31 @@ e0
 
 ------------------------------------------------------------------------
 
+<<<<<<< Updated upstream:06_HypothesisTesting.Rmd
 # 3. Checking the normality of the distribution
+=======
+### Exercice 3
+
+Can you find interesting differences in the mean values of parameters of the dataset **dat** for the two groups defined by the **location**?
+Follow these steps:
+
+1.  Select the two groups according to the location.
+    To do so, check the result of `unique(dat$location)` and create two vectors that contain the corresponding row indexes of "dat".
+
+2.  Calculate the mean values of the numerical parameters for each group (ex: age, height, weight, waist, hip, ...).
+    *Hint*: create first a dataframe with numeric columns only (subset the current data frame "dat" using c(2,3,4,5,6,8,10,11,13,14,17,18)).
+    Select the rows corresponding to the two groups and use an `sapply()` loop to calculate the mean values for each.
+
+3.  Select one of these, formulate the H0 and H1 hypotheses and perform a (two-sided) t-test.
+    Interpret the result (alpha = 0.05).
+
+## ------------------------------------------------------------------------
+
+# 3. Going further ... Checking the normality of the distribution
+
+In principle, t-tests require that the data is approximately normally distributed.
+If not, we can use **non-parametric** tests (see next lecture).
+>>>>>>> Stashed changes:archive/06_HypothesisTesting.Rmd
 
 In order to check whether the data is normally distributed or not, it is possible to perform a **Shapiro-Wilk** normality test (see lecture).
 This statistical test is implemented in R in the function **shapiro.test()**.
@@ -360,7 +384,12 @@ hist(t.values);abline(v=t.obs,lwd=3,col='red')
 This distribution approximates the $H_0$ distribution of the test statistics.
 
 > What does the distribution look like??
+<<<<<<< Updated upstream:06_HypothesisTesting.Rmd
 > Compute the mean and standard deviation of the t.values; plot a qq-plot
+=======
+
+We can compute the mean and standard deviation of the t.values and plot a qq-plot:
+>>>>>>> Stashed changes:archive/06_HypothesisTesting.Rmd
 
 ```{r}
 mean(t.values)
@@ -391,8 +420,13 @@ hist(t.values,xlim=c(-4,4));abline(v=t.obs,lty=3,lwd=4,col='red')
 
 Since we are performing a 2-sided t-test here (remember the $H_0$ hypothesis formulation!), we have to check what the probability is to get **more extreme** t-values under $H_0$.
 
+<<<<<<< Updated upstream:06_HypothesisTesting.Rmd
 > Check in how many of these 10000 random splits we get a t-value that is more extreme than the observed, hence : lower that -abs(t.obs) or larger than abs(t.obs).
 > Normalize this number to the 10000 random splits to obtain the p-value!
+=======
+We can check in how many of these 10000 random splits we get a t-value that is more extreme than the observed, hence : lower than -abs(t.obs) or larger than abs(t.obs).
+We then normalize this number to the 10000 random splits to obtain the p-value:
+>>>>>>> Stashed changes:archive/06_HypothesisTesting.Rmd
 
 ```{r}
 p.value = sum(t.values < -abs(t.obs) | t.values > abs(t.obs))/length(t.values)

@@ -74,22 +74,34 @@ We are going to look at them more deeply in the following.
 ```{r echo=TRUE}
 
 # Distribution 1: Mean = 2, Standard Deviation = 1
+
 pnorm(1:4,mean=2,sd=1)
-#
+
 # Distribution 2: Mean = 2, Standard Deviation = 2
+
 pnorm(1:4,mean=2,sd=2)
-#
+
 # Distribution 2: Mean = 4, Standard Deviation = 1
+
 pnorm(1:4,mean=4,sd=1)
+
 ```
 
+<<<<<<< Updated upstream:04_ProbabilityDistributions_solutions.Rmd
 Do you understand why the cumulative distribution functions change the way they do? Now, on the same distributions, calculate the inverse cdf (inverse cumulative distribution function) for the cumulative probabilities of 25%, 50 % and 75%.\
 Finally try with 100% on any of the distributions. Can you explain this result? Do you expect the result to be different in the other ones?
+=======
+> Do you understand why the cumulative distribution functions change the way they do?
+
+Now, on the same distributions, we calculate the **inverse cdf** (inverse cumulative distribution function) for the cumulative probabilities of 25%, 50 % and 75%. We use the `qnorm()` function for this (**q- like quantile**):
+>>>>>>> Stashed changes:archive/04_ProbabilityDistributions_solutions.Rmd
 
 ```{r}
 qnorm(c(0.25,0.5,0.75),mean=2,sd=1)
 qnorm(c(0.25,0.5,0.75),mean=2,sd=2)
 qnorm(c(0.25,0.5,0.75),mean=4,sd=1)
+#
+# qnorm(100, 4, 1)
 ```
 
 2.  Now that you know the output of the p- and q- functions, let's look at **d- like density probability** functions. For any continuous distribution, the value of the function at any specific value is 0. This is why this probability function is used in discrete distribution such as the binomial distribution (function **dbinom()**). Calculate the probability of getting 5 events out of 5 in a binomial distribution with a probability of 0.5. Then calculate the odds of **not** getting 5 out of 5. How can you calculate this easily?
@@ -97,28 +109,44 @@ qnorm(c(0.25,0.5,0.75),mean=4,sd=1)
 ```{r}
 # probability of 5 out of 5
 dbinom(5, size=5, prob=0.5)
-#
+
 # probability of NOT getting 5 out of 5
 1-dbinom(5, size=5, prob=0.5)
 # or
 pbinom(4, size=5, prob=0.5)
 # Remember, pbinom() returns the "cumulative probability" of ...
+
+# Probability of 3 or more (beware: the argument is > 2, i.e. 3 or more)
+pbinom(2, size=5, prob = 0.5, lower.tail=FALSE)
+
 ```
 
+<<<<<<< Updated upstream:04_ProbabilityDistributions_solutions.Rmd
 3.  Suppose that the distribution of body height is described by a **normal distribution** with **mean = 1.75 m** and standard deviation **sd = 0.15**. What is the probability that someone is taller than 1.9 m? Try to use the parameter **lower.tail** of the function pnorm().\
     Smaller than 1.6 m?
+=======
+> What is the probability of getting 5 out of 10? And NOT getting 5 out of 10?
+
+3.  Suppose that the distribution of body height is described by a **normal distribution** with **mean = 1.75 m** and standard deviation **sd = 0.15**. What is the probability that someone is taller than 1.9 m? We can use the parameter **lower.tail** of the function `pnorm()` for this.   What is the probability that someone is smaller than 1.6 m?
+>>>>>>> Stashed changes:archive/04_ProbabilityDistributions_solutions.Rmd
 
 ```{r}
 ## taller than 1.9
 pnorm(1.9,mean=1.75,sd=0.15,lower.tail=FALSE)
 # or
+pnorm(1.9,mean=1.75,sd=0.15,lower.tail=F)
+# or
 1-pnorm(1.9,mean=1.75,sd=0.15)
 
 ## smaller than 1.6
 pnorm(1.6,mean=1.75,sd=0.15,lower.tail=TRUE)
+# or
+pnorm(1.6,mean=1.75,sd=0.15,lower.tail=T)
 # equivalent to 
 pnorm(1.6,mean=1.75,sd=0.15)
-# because: per defaults, lower.tail is set to TRUE
+# because per defaults, lower.tail is set to TRUE
+# or
+1-pnorm(1.6,mean=1.75,sd=0.15,lower.tail=F) # a bit more complicated view of the same thing.
 ```
 
 Let's have a look at this distribution using the **dnorm()** function:
@@ -126,16 +154,27 @@ Let's have a look at this distribution using the **dnorm()** function:
 ```{r}
 x = seq(1,2.5,by=0.01)
 y = dnorm(x,mean=1.75,sd=0.15)
-plot(x,y,type='l',col='red',lwd=2);abline(v=c(1.6,1.9),lty=3,lwd=2)
+z = dnorm(x,mean = 1.75, sd = 0.25)
+plot(x,y,type='l',col='red',lwd=2);abline(v=c(1.6,1.9),lty=3,lwd=2);lines(x,z,col='blue',lwd=2)
 ```
 
-4.  Let's finally look at **r- like random** functions. These, unlike the others, don't return single probabilities or values but rather generate a random distribution of values. Try to generate a normal distribution with mean = 10, sd = 5.\
-    *Is it possible to generate a Poisson distribution and a binomial distribution?*
+4.  Let's finally look at **r- like random** functions. These, unlike the others, don't return single probabilities or values but rather generate a random distribution of values. Try to generate a normal distribution with mean = 10, sd = 5.
+    Is it possible to generate a Poisson distribution and a binomial distribution?
 
 ```{r}
 ## normal distribution
 x = rnorm(n=1000,mean=10,sd=5)
 hist(x,breaks=20)
+#
+## Poisson distribution: not possible, as var=mean !!
+#
+## Binomial distribution: not possible, as we must have var < mean 
+## try instead with mean = 10, sd = 3
+# mean = Lp = 10
+# var = 10(1-p) = 3^2
+# p = 0.1, L=100
+y = rbinom(100,100,0.1)
+hist(y,breaks=20)
 ```
 
 ------------------------------------------------------------------------
@@ -168,7 +207,7 @@ d3 = dnorm(x,mean=20,sd=1)
 r1 = rnorm( n=1000, mean=0, sd =1) # random distributions of values
 r2 = rnorm( n=1000, mean=10, sd =1)
 r3 = rnorm( n=1000, mean=20, sd =1)
-hist(r1,breaks=seq(-10,30,by=.5),probability = TRUE,ylim=c(0,.5),main="",xlab="") # Histogram visualization
+hist(r1,breaks=seq(-10,30,by=.5),probability = TRUE,ylim=c(0,0.5),main="",xlab="") # Histogram visualization
 hist(r2,breaks=seq(-10,30,by=.5),probability = TRUE,add=TRUE)
 hist(r3,breaks=seq(-10,30,by=.5),probability = TRUE,add=TRUE)
 # Line with the density distribution as above
@@ -178,6 +217,18 @@ lines(x,d3,col='green',lwd=4)
 ```
 
 > Play with the mean and sd parameters and visualize the distributions (plain lines) as well as the corresponding histograms. What happens when you remove the parameter `probability=TRUE` in the histogram function?
+
+```{r}
+r1 = rnorm( n=1000, mean=0, sd =1) # standard normal distribution
+r2 = rnorm( n=1000, mean=10, sd =1)
+r3 = rnorm( n=1000, mean=20, sd =1)
+hist(r1,breaks=seq(-10,30,by=.5),ylim=c(0,25),main="",xlab="")
+hist(r2,breaks=seq(-10,30,by=.5),add=TRUE)
+hist(r3,breaks=seq(-10,30,by=.5),add=TRUE)
+lines(x,d1,col='red',type='l',lwd=4)
+lines(x,d2,col='blue',lwd=4)
+lines(x,d3,col='green',lwd=4)
+```
 
 ------------------------------------------------------------------------
 
@@ -320,11 +371,28 @@ plot(x=q.theoretical, y=q.observed);abline(0,1,lty=1,lwd=2,col='red')
 
 ------------------------------------------------------------------------
 
+<<<<<<< Updated upstream:04_ProbabilityDistributions_solutions.Rmd
+=======
+# Exercises
+
+>>>>>>> Stashed changes:archive/04_ProbabilityDistributions_solutions.Rmd
 #### Exercise I
 
 1.  What is the expression of TP53 observed at 10th percentile? What is the expression of TP53 observed at 90th percentile?
 
+```{r}
+quantile(tp53.exp$TP53_expression,probs = c(0.1,0.9))
+```
+
 2.  Other distribution types can become very similar to the normal distribution under certain conditions. Plot the histogram of a Poisson distribution of length 1000 with lambda = 1, 10, 100, 1000. What do you observe?
+
+```{r}
+l = c(1,10,100,1000)
+sapply(l,function(x) {
+  y = rpois(1000,lambda=x)
+  hist(y, main = paste("lambda =", x))
+})
+```
 
 ------------------------------------------------------------------------
 
@@ -374,7 +442,7 @@ plot(ppois(q = 0:60, lambda = 30), type="b", xlab = "Average Mutations", ylab ="
 abline(v=30)
 ```
 
-A different way of visualizing the data which is more intuitive and clear is by plotting the densities of probabilities. We do the same as before using the Poisson distribution.
+A different way of visualizing the data which is more intuitive and clear is by plotting the densities of probabilities. We do the same as before (with the normal distribution) but now using the Poisson distribution.
 
 ```{r fig.width=10}
 p.pred = dpois(x = 0:60, lambda = 30)
@@ -400,7 +468,20 @@ lines(nd, col="grey", type="l")
 
 1.  A patient has convulsions and needs to be injected every time he does. Every day he has an average of 3 cases. How many syringes should the hospital prepare daily to cover 99.9% of the scenarios?
 
+```{r}
+## Poisson distribution lambda=3
+qpois(0.999,lambda=3)
+```
+
 2.  What are the odds that he has 2 episodes or fewer? And 2 episodes or more?
+
+```{r}
+## 2 or fewer
+ppois(2,lambda=3)
+
+## 2 or more (beware here: > 1)
+ppois(1,lambda=3,lower.tail=FALSE)
+```
 
 ------------------------------------------------------------------------
 

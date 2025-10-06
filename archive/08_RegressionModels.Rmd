@@ -32,9 +32,9 @@ In this last part, we want to learn how to build a **regression model** in order
 -   **testing** the model to evaluate its performances, and also check that the assumptions of the linearity are given
 -   **predict** values based on new data points
 
-We will use again the diabetes data set, and build  
-(1) simple linear regression models with a single explanatory variable, and  
-(2) multiple regression models in which we use several variables.  
+We will use again the diabetes data set, and build\
+(1) simple linear regression models with a single explanatory variable, and\
+(2) multiple regression models in which we use several variables.\
 We will focus on predicting the **cholesterol level**.
 
 # 2. Load the data and first analysis
@@ -49,7 +49,9 @@ We will limit the dataset to the numerical variables
 dat = tmp[,c(2,3,4,6,8,10,11,13,14,17,18)]
 head(dat)
 ```
-First, we have to perform some data cleaning and remove all patients with at least 1 "NA" 
+
+First, we have to perform some data cleaning and remove all patients with at least 1 "NA"
+
 ```{r}
 # Determine which patients have at least 1 NA
 i.na <- which( apply(dat, 1, function(x) {sum(is.na(x)) >0 }) )
@@ -59,14 +61,15 @@ i.na <- which( apply(dat, 1, function(x) {sum(is.na(x)) >0 }) )
 dat = dat[-i.na,]
 ```
 
-
 Let's look at the correlation between variables with scatter plots!
+
 ```{r}
 # Plot variable correlation scatterplots for all variables.
 pairs(dat,col='red', pch=20, cex = 0.5)
 ```
 
 That's a good overview, now we make a heatmap and visualize the correlation values.
+
 ```{r}
 cor = cor(dat)
 #
@@ -132,7 +135,7 @@ plot(dat$chol,l.g$fitted.values,pch=20,col='blue', xlab='Real values',ylab='Pred
 
 Not really super convincing, right? Let's put more information into the model!
 
-#4. Multiple regression model
+# 4. Multiple regression model
 
 Let us include all the information to try to predict cholesterol level:
 
@@ -226,8 +229,8 @@ Of course, the RMSE is higher on the test dataset, since this does not include t
 
 An important topic here is **feature selection**, i.e. finding the optimal and minimal set of explanatory variables that allow to predict well the output variable.
 
-
 We now repeat the train/test split 10 times with each time a different random split; plot the 10 rmse.train and rmse.test values!
+
 ```{r}
 set.seed(345)
 RMSE <- sapply(1:10, function(x) {
@@ -253,7 +256,6 @@ RMSE <- sapply(1:10, function(x) {
 #
 plot(RMSE[1,], pch = 19, col = "orange", xlab = "Iteration", ylab = "RMSE values", ylim = c(min(RMSE),max(RMSE)+2));points(RMSE[2,], pch = 19, col = "purple");legend("topright", legend = c("rmse.train", "rmse.test"), col = c("orange","purple"), pch = c(19,19));abline(h = mean(RMSE[1,]), lty = 2, col = "orange");abline(h = mean(RMSE[2,]), lty = 2, col = "purple")
 ```
-
 
 ------------------------------------------------------------------------
 
@@ -287,7 +289,6 @@ pheatmap(cor.pca,
          display_numbers = TRUE)
 ```
 
-
 Let us now run the linear regression with all PCs:
 
 ```{r}
@@ -301,7 +302,6 @@ summary(l.pca)
 par(mfrow=c(3,2),mar=c(2,4,2,2))
 barplot(pca$rotation[,1],horiz=TRUE,main='PC1',col='red');barplot(pca$rotation[,3],horiz=TRUE,main='PC3',col='red');barplot(pca$rotation[,4],horiz=TRUE,main='PC4',col='red');barplot(pca$rotation[,5],horiz=TRUE,main='PC5',col='red');barplot(pca$rotation[,6],horiz=TRUE,main='PC6',col='red');barplot(pca$rotation[,10],horiz=TRUE,main='PC10',col='red')
 ```
-
 
 > Reproduce this analysis for the variable `glyhb`
 

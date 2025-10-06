@@ -1,0 +1,367 @@
+---
+title: "Data Analysis - Exercise Sheet 2"
+author: "Carl Herrmann, Maiwen Caudron-Herger"
+output: html_document
+---
+
+```{r knitr_init, echo=FALSE, cache=FALSE}
+library(knitr)
+library(rmdformats)
+## Global options
+options(max.print="120")
+opts_chunk$set(echo=TRUE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=120)
+
+```
+
+We use again the diabetes dataset, and perform again the data cleaning. For a more in-depth explanation on the following data cleaning steps, see the last exercise sheet "01_Introduction", where this process is discussed in detail.
+
+```{r, echo=FALSE, eval = TRUE}
+dat = read.delim('https://tinyurl.com/y4fark9g') # load the data set
+
+# set the row names using the column id
+rownames(dat) = dat$id
+
+# remove some columns: first, we determine which column index corresponds to the column names id, bp.2s, bp.2d, time.ppn
+i.remove = which(colnames(dat) %in% c("id","bp.2s", "bp.2d", "time.ppn"))
+i.remove
+
+# now remove these columns, using the - sign:
+dat = dat[, -i.remove]
+
+# we reorder the remaining columns, in order to put the categorical columns first, and numerical columns after
+dat = dat[,c(8,6,11,9,10,14,15,2,5,1,3,4,12,13)]
+
+# Go through each row and sum up all missing values
+rmv.rows = apply(dat,1,function(x){sum(is.na(x))}) 
+
+# see the number of missing values of the first rows:
+head(rmv.rows)
+
+# determine the row index of rows with 1 or more missing values
+i.missing = which(rmv.rows >0)
+head(i.missing)
+
+# remove the rows which have more than one missing value
+dat = dat[-i.missing,] 
+
+```
+
+**Recommendation:** in order to avoid going through several excercise sheets in the future to perform the data cleaning, create now a R file where you save all of the code that we use to manipulate our data.  You can also save the environment containing all the needed variables as an .RData file or separately save a variable of interest. For example, the dataframe "dat" (after all cleaning steps):
+
+```{r, eval= FALSE}
+save(dat, file = "dat.RData") #save the data frame "dat" as an .Rdata file
+```
+
+Whenever you need it, you can load the dataframe using the function `load()`.
+
+```{r, eval= FALSE}
+load("dat.RData")
+```
+
+The numerical columns start at column index 4 and end at column index 14. We now create a new data frame called "dat.num" containing only the numerical columns:
+
+```{r}
+dat.num = dat[, 4:14]
+summary(dat.num)
+```
+
+# Correlation - Clustering
+
+## 0. Recap of the last sheet
+
+We have looked at a dataset of diabetes patients and used functions to clean it up of missing data and visualize the cleaned up data.
+
+## 1. Objectives
+
+In this sheet we will keep looking at our dataset to explore the statistical properties of each variable (like its distribution, mean value etc) and question relations between variables (like is blood glucose level correlated with obesity?). We will also start using unsupervised learning on a new dataset (more on this later) with k-means clustering.
+
+## 2. Measuring the centrality in data
+
+Before you begin, think back of the lecture about mean, median and quantiles. Do you remember what these terms mean? How does an asymmetrical distribution influences mean and median? Think back to all these topics before you proceed.
+
+We have already seen that the `summary()` and `quantile()` functions in R can compute the mean, median and quantiles of any given data. Let's now use functions in R that explicitly measure these values.
+
+### Mean
+
+```{r}
+mean(dat$stab.glu)
+```
+
+### Median
+
+```{r}
+median(dat$stab.glu)
+```
+
+> Calculate the mean and median of other continuous numeric data in the diabetes dataset and measure the difference between them. (a) Why is there a difference between the mean and median? (b) Why do you think there are larger differences for some and almost no difference for others?
+
+You should still be familiar with the `quantile()` function since you needed it for the last exercise in the last exercise of the past sheet.
+
+### Quantiles
+
+```{r}
+quantile(dat$stab.glu) 
+```
+
+> Do you remember how it works? And how you can pick any specific quantile you need?
+
+## 3. Association between variables
+
+Often a common step during any data analysis project is to find associations between variables present in the dataset. Such associations helps us to decipher the underlying structure in the data. For instance, in our diabetes dataset we would expect a high correlation between free blood glucose levels and glycosylated blood levels or between waist and hip sizes. One of the most common ways of measuring associations is *correlations*:
+
+### Correlations
+
+Let us start by producing a **scatter plot** between some pairs of variables:
+
+```{r, eval = TRUE}
+plot(dat$stab.glu,dat$glyhb,
+     pch=20,
+     xlab='Stabilized glucose',
+     ylab='Glycosylated hemoglobin'
+     )
+```
+
+> Do you suspect that the two variables have a relationship? Do the scatter plot for other pairs of numerical variables!
+
+We now can compute the correlation of the two variables; remember that we can compute the **Pearson correlation** or the **Spearman correlation**:
+
+```{r}
+## compute the Pearson correlation
+cor(dat$stab.glu, dat$glyhb, method='pearson')
+##
+## compute the Spearman correlation
+cor(dat$stab.glu, dat$glyhb, method='spearman')
+```
+
+The Spearman correlation seems much lower! To understand why, we can do a scatter plot between the **ranks** of the two variables:
+
+```{r}
+plot(rank(dat$stab.glu),rank(dat$glyhb),
+     pch=20,
+     xlab='Ranks Stabilized glucose',
+     ylab='Ranks Glycosylated hemoglobin'
+     )
+```
+
+When looking at the ranks, the relationship is no longer so obvious. However, these correlations still represent an association between the variables!
+
+### Pairwise scatter plot
+
+Lets calculate and visualize the correlations among all our variables in the diabetes dataset:
+
+```{r, fig.width=12, fig.height=10}
+pairs(dat.num, pch=20, cex=0.5, col="grey")
+```
+
+> Which correlations did you expect to see and what were novel? Can you explain the relation you observe between `hdl, chol and ratio`. Remember that `ratio = chol/hdl` [see here](https://biostat.app.vumc.org/wiki/pub/Main/DataSets/Cdiabetes.html)
+
+> Associations are among the simplest forms of structure in the data! It is important to remember that *Association does not imply correlation* and *Correlation does not imply causation*. Take a look at this page to view few common logical fallacies. [see here](https://en.wikipedia.org/wiki/Fallacy)
+
+## 4. Unsupervised learning - clustering
+
+**Unsupervised clustering** is one of the most basic data analysis techniques. It allows to identify groups (or clusters) or observations (here: patients) or variables. *Unsupervised* means that you are not using any prior knowledge about groups of variables or associations. **K-means clustering** is a good example of unsupervised learning because the method categorizes sample based uniquely on the data.
+
+In this part, we will use a dataset of gene expression data from the TCGA (The Cancer Genome Atlas) project. This project has sequenced several thousand samples from cancer patients of more than 30 cancer types. We will use a subset of this data, containing 200 samples (=patients, as columns) , for which the expression of 300 genes (= rows) has been measured.
+
+### 4.1 Lets get started - Load data
+
+#### Load the required data into Rstudio and explore it
+
+We will start by reading the gene expression data. The columns are the samples and the rows are the genes.
+
+```{r}
+
+brca.exp = readRDS(url('https://www.dropbox.com/s/qububmfvtv443mq/brca.exp.rds?dl=1'))
+dim(brca.exp)
+brca.exp[1:10,1:10]
+```
+
+**WARNING**: If you have problem loading the data, please download [this file](https://www.dropbox.com/s/qububmfvtv443mq/brca.exp.rds?dl=1), store it on your disk, and open it with the following command:
+
+```{r}
+#brca.exp = readRDS("xxxx") # xxxx should be replaced with the path to the downloaded file!
+```
+
+Next we will load the clinical annotation file for this gene expression data and explore it
+
+```{r}
+brca.anno = readRDS(url('https://www.dropbox.com/s/9xlivejqkj77llc/brca.anno.rds?dl=1'))
+head(brca.anno)
+```
+
+Same here: if you have issues running the previous `readRDS` command, download [this file](https://www.dropbox.com/s/z6bzwzgzdhky1qz/brca.anno.rds?dl=1), save it on your disk and load it with
+
+```{r}
+### brca.anno = readRDS(xxx)
+```
+
+You can check the number of samples for each tumor type using the `table()` function, applied to a specific column (here, there is only one column...)
+
+```{r}
+table(brca.anno$HER2_status)
+```
+
+### 4.2 Data transformation
+
+You will see that the distribution of the data is extremely squeezed due to **outliers** with very high or low values. We will need to make the data more homogeneous, such that our downstream analysis is not affected by these very large magnitude numbers.
+
+We will carry out the following data processing steps. Some of these steps use rather arbitrary values, which come from visually inspecting the data!
+
+1.  **Thresholding:** cap the values to the 95th percentile
+
+2.  **Homogenization:** base--2 logarithmic transformation of the entire dataset
+
+3.  **Scaling:** standardize the data so that across genes the mean = 0 and variance = 1.
+
+**Before we start modifying the data, we will store the original data frame into a variable, so that in case of problems we can revert back to the initial data!!**
+
+```{r}
+brca.exp.original = brca.exp
+```
+
+**Thresholding**
+
+```{r}
+## what is the value of the 95th percent percentile?
+q95 = quantile(brca.exp,probs=0.95)
+
+## set all values above to this value
+brca.exp[brca.exp>q95] = q95
+```
+
+**Homogenization and Scaling**
+
+```{r}
+## take log2
+brca.exp = log2(brca.exp+1)
+```
+
+> Why do we add +1 ?
+
+```{r}
+## scaling
+brca.exp = scale(brca.exp)
+
+## plotting the density
+plot(density(brca.exp))
+```
+
+Compare to the density plot before these pre-processing steps
+
+```{r}
+plot(density(brca.exp.original))
+```
+
+### 4.3 k-means clustering
+
+Another widely used method for grouping observations is k-means clustering. Now we will cluster our dataset using k-means and explore the underlying structure of the data.
+
+#### performing k-means
+
+We use the function `kmeans()` in R. You can check the options and usage in the help panel on the right. The parameter `centers` indicates how many clusters are requested.
+
+```{r}
+km = kmeans(x=t(brca.exp), 
+            centers = 2, 
+            nstart = 10)
+
+```
+
+> Just type `km` in your console and check all results generated. Play around with the `centers` parameter. See cluster assignments by typing `table(km$cluster)`
+
+#### Quality of the clustering
+
+We can judge the quality of the clustering by computing the **intra**-cluster distances, i.e. the sum (squared) of all distances between pairs of objects belonging to the same cluster. This is called the **within sum of squares (WSS)**. The better the clustering, the smaller WSS should be. However, it also automatically decreases with increasing k
+
+> What would be WSS if we request a number of clusters equal to the number of data points? You can check what the WSS is for a particular clustering by typing
+
+```{r}
+km$tot.withinss
+```
+
+> run k-means for k=2 to k=7 clusters, and for each k check the WSS value. How does WSS evolve with increasing k?
+
+We can also run a little loop to do this:
+
+```{r}
+wss = sapply(2:7,function(k) { 
+  kmeans(x=t(brca.exp), centers =k)$tot.withinss
+})
+plot(2:7,wss,type='b',pch=19,xlab="Number of clusters K",
+     ylab="Total within-clusters sum of squares")
+```
+
+> do you see an obvious "elbow" or "kink" in the curve?? Another criteria for the quality of the clustering is the **silhouette** method (check the slides of the lecture!).
+
+To run the silhouette method, we need to compute the pairwise distances between all objects (i.e. patients) in the data matrix. This is done with the `dist` function, which can take different metrics (euclidean, ...)
+
+```{r}
+## compute the patient-patient distance matrix (this is why we transpose using the `t()` function)
+D = dist(t(brca.exp))
+```
+
+We now compute the silhouette for a specific k-means clustering:
+
+```{r}
+library(cluster)
+km = kmeans(x=t(brca.exp), centers = 3, nstart = 10)
+s = silhouette(km$cluster,D)
+plot(s)
+```
+
+> Check the average silhouette values at the bottom; repeat this for other values of k
+
+## Exercises
+
+#### Exercise 1 - Quantiles and Histograms
+
+1.  Compute the mean value of the cholesterol variable of "dat" and store it in the variable "m.chol".
+
+2.  Compute the 1%, 10%, 25%, 50% (=median), 75%, 90%, 99% quantiles using the `quantile()` function, and using the argument `probs=c(0.01,0.1,0.25,0.5,0.75,0.9,0.99)`. Store these value in a new vector variable called "q.chol".
+
+3.  Plot the values of cholesterol as a histogram using the `hist()` function
+
+4.  Use the `abline(v=…)` function to plot vertical lines on top of the histogram at the values corresponding to the quantiles you have just computed.
+
+#### Exercise 2 - Correlations
+
+1.  Is there an association between "hip" and "waist" of the data frame "dat"? Use the `plot()` function to do a scatter plot of the **values** and of the **ranks** (determine the ranks with the `rank()` function). Compute both the **pearson** and **spearman** correlation values.
+
+2.  Use the numerical dataframe "dat.num", and apply the function `cor()` **directly** on this data frame: `cor(dat.num)` . What happens? What is the output? Store the result of this command in a variable named "all.cor".  Plot a heatmap of these results using the `pheatmap()` function from the "pheatmap" package. Remember that you first have to activate this package using `library("pheatmap")`.
+
+3.  Find the **highest** and **lowest** Pearson correlation value of the result from exercise 2.2. To which pair of variables do they correspond? Plot the corresponding scatter plots using `plot()`! *Hint*: Before finding the highest Pearson correlation value, use the `diag()` function to set all diagonal values (=1) of "all.cor" to NA.
+
+#### Exercise 3
+
+Let's use the new dataset "brca.exp" as an opportunity to apply the skills we learned in the previous exercise sheet. It's crucial that you keep exercising and repeating, otherwise you will easily forget your coding skills.
+
+1.  Calculate the mean and median expression level and the standard deviation for each sample. Use the `apply(...)` function for this (you can check [this tutorial](https://www.datacamp.com/community/tutorials/r-tutorial-apply-family))
+
+2.  Repeat the same for each gene.
+
+3.  Plot the median expression values from all genes as an (a) histogram using the `hist()` function, and (b) density plot using the `density()` and `plot()` functions.
+
+4.  Calculate how many genes have a lower standard deviation of expression than the average standard deviation. Print out their amount.
+
+## Going further...
+
+You have used a dataset with a reduced number of genes (= rows). They have been pre-selected, according to certain criteria. Here is a larger dataset, with more genes for the same samples
+
+```{r}
+brca.large = readRDS(url('https://www.dropbox.com/s/m6nfxul95borupz/brca.exp_large.rds?dl=1'))
+```
+
+Follow the next steps:
+
+1.  use the `apply()` function on all rows to compute the standard deviation of the genes using the `sd()` function.
+
+2.  use the `order(...,decreasing=TRUE)` function to determine the row index of the top 200 most variant genes.
+
+3.  Calculate the pairwise correlations of these genes using `cor()` and plot again the heatmap with these genes using `pheatmap()` (see exercise 2.2).

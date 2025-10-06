@@ -29,11 +29,23 @@ In this practical session you will
 
 Throughout this course we will use a common **diabetes dataset** to practically implement the concepts taught during the lectures.
 
+<<<<<<< Updated upstream:01_Introduction.Rmd
 Our dataset has various pathophysiological measurements of \> 400 individuals. Clinical parameters like blood glucose levels, cholesterol levels, age, body size, weight, blood pressure etc have been measured. We will use this dataset to explore the statistical properties of each variable (like its distribution, mean value etc) and question relations between variables (like is blood glucose level correlated with obesity?).
+=======
+Our dataset has various clinical measurements of \> 400 individuals.
+Clinical parameters like blood glucose levels, cholesterol levels, age, body size, weight, blood pressure etc have been measured.
+We will use this dataset to explore the statistical properties of each variable (like its distribution, mean value etc) and question relations between variables (like is blood glucose level correlated with obesity?).
+>>>>>>> Stashed changes:archive/01_Introduction.Rmd
 
 # 2. Let's take our first steps in RStudio
 
+<<<<<<< Updated upstream:01_Introduction.Rmd
 R is a powerful programming language for the analysis of data. It is recommended that you take the introductory classes for R in DataCamp to get to know this language before you start coding here. In this course you will learn to use RStudio, a software that allows you to use R in a very user-friendly way. When you open RStudio you can see the console on the left side of your screen. The console is one of the two panes you can write you code in. Let's find out more about them.
+=======
+We will load the dataset into R and have a sneak peek into how it looks like with the console.
+In the following you will see several functions that give us information about our dataset.
+You will also see how the "\$" sign is used to access specific columns of out dataframe.
+>>>>>>> Stashed changes:archive/01_Introduction.Rmd
 
 ## 2.1 The Console
 
@@ -113,7 +125,11 @@ nrow(dat)
 colnames(dat) # Similarly rownames for rows
 ```
 
+<<<<<<< Updated upstream:01_Introduction.Rmd
 Probably you are confused about what these column names mean. For more description on these values [look here](https://biostat.app.vumc.org/wiki/pub/Main/DataSets/Cdiabetes.html)
+=======
+For more description on these values [look here](https://hbiostat.org/data/repo/cdiabetes)
+>>>>>>> Stashed changes:archive/01_Introduction.Rmd
 
 **3.** How do we extract the minimum and maximum age of patients in our dataset
 
@@ -365,7 +381,12 @@ Add the parameter `breaks = 50` in the above lines of code and see what happens.
 ### Density plots
 
 ```{r eval = TRUE}
+<<<<<<< Updated upstream:01_Introduction.Rmd
 plot(density(dat$stab.glu), xlab ="Stabilized Glucose concentration in blood", main ="Glucose concentration")
+=======
+d <- density(dat$stab.glu,bw = 20)
+plot(d, xlab ="Stabilized Glucose concentration in blood", main ="Glucose concentration")
+>>>>>>> Stashed changes:archive/01_Introduction.Rmd
 ```
 
 ### Boxplots
