@@ -51,39 +51,18 @@ head(i.missing)
 # remove the rows which have more than one missing value
 dat = dat[-i.missing,] 
 
+# this will save the cleaned data into a file, which you can load the next time with readRDS(...)
+saveRDS(dat, file = "dat_cleaned.Rds")
 ```
 
-#### Exercise 0
-
-The numerical columns start at column index 4 and end at column index 14. Can you create a new dataframe called `dat.num` containing only the numerical columns?
 
 # Correlation - Clustering
-
-## 0. Recap of the last sheet
-
-We have looked at a dataset of diabetes patients and used functions to clean it up of missing data and visualize the cleaned up data. If the dataset is not in your environment anymore (See top right panel) go through all the functions of part 1 concerning this dataset.
-
-**Recommendation:** in order to avoid going through several excercise sheets in the future create now a R file where you save all of the code that we use to manipulate our data.
-
-You can also save the environment containing all the needed variables as an .RData file or separately save a variable of interest for example, the dataframe dat (after all cleaning steps)
-
-```{r, eval= FALSE}
-save(dat, file = "dat.RData")
-```
-
-Whenever you need it, you can upload the dataframe using the function **load()**.
-
-```{r, eval= FALSE}
-load("dat.RData")
-```
 
 ## 1. Objectives
 
 In this sheet we will keep looking at our dataset to explore the statistical properties of each variable (like its distribution, mean value etc) and question relations between variables (like is blood glucose level correlated with obesity?). We will also start using unsupervised learning on a new dataset (more on this later) with k-means clustering.
 
 ## 2. Measuring the centrality in data
-
-Before you begin, think back of the lecture about mean, median and quantiles. Do you remember what these terms mean? How does an asymmetrical distribution influence mean and median? Think back to all these topics before you proceed.
 
 We have already seen that the `summary` and `quantile` functions in R can compute the mean, median and quantiles of any given data. Let now use functions in R that explicitly measure these values.
 
@@ -111,13 +90,6 @@ quantile(dat$stab.glu)
 
 > Did you remember how it works? And how you can pick any specific quantile you need?
 
-#### Exercise 1
-
-1.  Compute the mean value of the cholesterol variable and store it in the variable `m`.
-2.  Compute the 1%, 10%, 25%, 50% (=median), 75%, 90%, 99% quantiles using the `quantile` function, and using the argument `probs=c(0.01,0.1,0.25,0.5,0.75,0.9,0.99)`. Store these value in a new vector variable called `q`
-3.  Plot the values of cholesterol as a histogram using the `hist` function
-4.  Use the `abline(v=…)` function to plot vertical lines on top of the histogram at the values corresponding to the quantiles you have just computed.
-5.  Repeat this with the blood pressure!
 
 ## 3. Association between variables
 
@@ -147,25 +119,13 @@ cor(dat$stab.glu,dat$glyhb,method='pearson')
 cor(dat$stab.glu,dat$glyhb,method='spearman')
 ```
 
-The Spearman correlation seems much lower! To understand why, we can do a scatter plot between the **ranks** of the two variables:
+> Comment on the differences between these 2 measures!
+> Redo the analysis for the variables `hip` and `waist`
 
-```{r}
-plot(rank(dat$stab.glu),rank(dat$glyhb),
-     pch=20,
-     xlab='Ranks Stabilized glucose',
-     ylab='Ranks Glycosylated hemoglobin'
-     )
-```
-
-When looking at the ranks, the relationship is no longer so obvious. However, these correlations still represent an association between the variables!
-
-#### Exercise 2
-
-1.  Repeat the process for `hip` and `waist`. Do a scatter plot of the **values** and of the **ranks**, and compute both the **pearson** and **spearman** correlation values.
-2.  Use the numerical dataframe `dat.num` you created in exercise 0, and apply the function `cor` **directly** on this data frame: `cor(dat.num)` . What happens? What is the output? Store the result of this command in a variable named `all.cor`
-3.  Find the highest and lowest Pearson correlation value. To which pair of variables do they correspond? Plot the corresponding scatter plots!
 
 ### Pairwise scatter plot
+
+> The numerical columns start at column index 4 and end at column index 14. Can you create a new dataframe called `dat.num` containing only the numerical columns?
 
 Lets calculate and visualize the correlations among all our variables in the diabetes dataset
 
@@ -190,8 +150,7 @@ In this part, we will use a dataset of gene expression data from the TCGA (The C
 We will start by reading the gene expression data. The columns are the samples and the rows are the genes.
 
 ```{r}
-
-brca.exp = readRDS(url('https://www.dropbox.com/s/qububmfvtv443mq/brca.exp.rds?dl=1'))
+brca.exp = readRDS(url('https://www.dropbox.com/scl/fi/xlkfv97po3yq2qg9ekftd/brca.rds?rlkey=3c8d0lktsrfs4989rpaenm1qq&dl=1'))
 dim(brca.exp)
 brca.exp[1:10,1:10]
 ```
@@ -202,14 +161,6 @@ brca.exp[1:10,1:10]
 #brca.exp = readRDS("xxxx") # xxxx should be replaced with the path to the downloaded file!
 ```
 
-#### Exercise 3
-
-Let's use this new dataset as an opportunity to apply the skills we learned in the previous exercise sheet. It's crucial that you keep exercising and repeating, otherwise you will easily forget your coding skills.
-
-1.  Calculate the min, max and median expression level for each sample. *Use the `apply(...)` function for this (you can check [this tutorial](https://www.datacamp.com/community/tutorials/r-tutorial-apply-family))*
-2.  Repeat the same for each gene.
-3.  Plot a histogram/density plot for the median expression values from all samples and genes
-4.  Calculate how many genes have a lower standard deviation of expression than the average standard deviation. Print out their amount.
 
 Next we will load the clinical annotation file for this gene expression data and explore it
 
@@ -230,54 +181,8 @@ You can check the number of samples for each tumor type using the `table` functi
 table(brca.anno$HER2_status)
 ```
 
-### 4.2 Data transformation
 
-You see that the distribution of the data is extremely squeezed due to **outliers** with very high or low values. We will need to make the data more homogeneous, such that our downstream analysis is not affected by these very large magnitude numbers.
-
-We will carry out the following data processing steps. Some of these steps use rather arbitrary values, which come from visually inspecting the data!
-
-1.  **Thresholding:** cap the values to the 95th percentile
-
-2.  **Homogenization:** base--2 logarithmic transformation of the entire dataset
-
-3.  **Scaling:** standardize the data so that across genes the mean = 0 and variance = 1.
-
-**Before we start modifying the data, we will store the original data frame into a variable, so that in case of problems we can revert back to the initial data!!**
-
-```{r}
-brca.exp.original = brca.exp
-```
-
-**Thresholding**
-
-```{r}
-## what is the value of the 95th percent percentile?
-q95 = quantile(brca.exp,probs=0.95)
-
-## set all values above to this value
-brca.exp[brca.exp>q95] = q95
-```
-
-**Homogenization and Scaling**
-
-```{r}
-## take log2
-brca.exp = log2(brca.exp+1) ## why do we add +1 ??
-
-## scaling
-brca.exp = scale(brca.exp)
-
-## plotting the density
-plot(density(brca.exp))
-```
-
-Compare to the density plot before these pre-processing steps
-
-```{r}
-plot(density(brca.exp.original))
-```
-
-## 4.3 k-means clustering
+## 4.2 k-means clustering
 
 Another widely used method for grouping observations is k-means clustering. Now we will cluster our dataset using kmeans and explore the underlying structure of the data.
 
@@ -335,6 +240,32 @@ plot(s)
 ```
 
 > Check the average silhouette values at the bottom; repeat this for other values of k
+
+### EXERCISES
+
+#### Exercise 1
+
+1.  Compute the mean value of the cholesterol variable and store it in the variable `m`.
+2.  Compute the 1%, 10%, 25%, 50% (=median), 75%, 90%, 99% quantiles using the `quantile` function, and using the argument `probs=c(0.01,0.1,0.25,0.5,0.75,0.9,0.99)`. Store these value in a new vector variable called `q`
+3.  Plot the values of cholesterol as a histogram using the `hist` function
+4.  Use the `abline(v=…)` function to plot vertical lines on top of the histogram at the values corresponding to the quantiles you have just computed.
+5.  Repeat this with the blood pressure!
+
+#### Exercise 2
+
+1.  Do the scatter plot for `hip` and `waist` and compute the correlation. 
+2.  Use the numerical dataframe `dat.num` you created in exercise 0, and apply the function `cor` **directly** on this data frame: `cor(dat.num)` . What happens? What is the output? Store the result of this command in a variable named `all.cor`
+3.  Find the highest and lowest Pearson correlation value. To which pair of variables do they correspond? Plot the corresponding scatter plots!
+
+#### Exercise 3
+
+Let's use this new dataset as an opportunity to apply the skills we learned in the previous exercise sheet. It's crucial that you keep exercising and repeating, otherwise you will easily forget your coding skills.
+
+1.  Calculate the min, max and median expression level for each sample. *Use the `apply(...)` function for this (you can check [this tutorial](https://www.datacamp.com/community/tutorials/r-tutorial-apply-family))*
+2.  Repeat the same for each gene.
+3.  Plot a histogram/density plot for the median expression values from all samples and genes
+4.  Calculate how many genes have a lower standard deviation of expression than the average standard deviation. Print out their amount.
+
 
 #### Going further...
 
