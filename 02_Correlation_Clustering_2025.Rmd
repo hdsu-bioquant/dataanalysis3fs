@@ -119,6 +119,7 @@ cor(dat$stab.glu,dat$glyhb,method='spearman')
 Lets calculate and visualize the correlations among all our variables in the diabetes dataset
 
 ```{r, fig.width=12, fig.height=10}
+# you have to creat dat.num first!
 pairs(dat.num, pch=20, cex=0.5, col="grey")
 ```
 
