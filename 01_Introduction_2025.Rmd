@@ -166,7 +166,7 @@ dat <- dat[, -i.remove]
 We re-order the remaining columns, in order to put the categorical columns first, and numerical columns after:
 
 ```{r}
-dat <- dat[,c(8,6,11,9,10,14,15,2,5,1,3,4,12,13)]
+dat <- dat[,c(8,6,11,9,10,14,15,2,5,7,1,3,4,12,13)]
 ```
 
 Now lets look at our cleaned data:
