@@ -413,7 +413,7 @@ It happens `r sum(!as.logical(i.ok))` times, which fits pretty well with the exp
 
 # EXERCISE
 
-## Exercise 1:
+## Exercise 1
 
 Repeat the exercise about the Central Limit Theorem, starting now from a **uniform** distribution (i.e. assume that the customer have an individual waiting time that is uniform between 0 and 20 minutes). Use the `runif` function for that (check the help page!)
 

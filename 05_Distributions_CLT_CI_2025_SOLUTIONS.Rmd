@@ -312,6 +312,11 @@ x1 <- runif(10000)
 x2 <- 1-x1
 ```
 
+```{r}
+plot(x1, x2)
+hist(0.5*(x1+x2))
+```
+
 > Does the CLT still hold here?
 
 ------------------------------------------------------------------------
@@ -417,13 +422,123 @@ It happens `r sum(!as.logical(i.ok))` times, which fits pretty well with the exp
 
 Repeat the exercise about the Central Limit Theorem, starting now from a **uniform** distribution (i.e. assume that the customer have an individual waiting time that is uniform between 0 and 20 minutes). Use the `runif` function for that (check the help page!)
 
+```{r simulation}
+# ============================================
+# This is the number of customers over which the owner computes the average.
+# CHANGE THIS VALUE TO EXPERIMENT!
+mu <- (20-0)/2 # for a uniform distribution with min = a and max = b, mu = (b-a)/2 
+sigma <- (20-0)/sqrt(12) # sigma = (b-a)/sqrt(12)
+number_clients <- 2  # Try: 2, 5, 10, 30, 50, 200
+# ============================================
+
+num_days <- 1000 # Number of days in which the survey is conducted
+
+# Simulate sample means
+sample_means <- replicate(num_days, {
+  sample_data <- runif(number_clients, min = 0, max = 20) # random simulation
+  mean(sample_data)
+})
+
+# Theoretical parameters for sampling distribution
+theoretical_mean <- mu
+theoretical_se <- sigma / sqrt(number_clients)
+```
+
+Now plot the sample means, i.e. the mean waiting time over a group of customers:
+
+```{r, fig.height=10}
+# Create two-panel plot
+par(mfrow = c(2, 1), mar = c(4, 4, 3, 2))
+
+# Panel 1: Histogram with normal overlay
+hist(sample_means, breaks = 40, freq = FALSE, 
+     col = "coral", border = "white",
+     main = paste("Distribution of Sample Means (n =", number_clients, ")"),
+     xlab = "Sample Mean Waiting Time (minutes)", ylab = "Density",
+     xlim = c(2, 15))
+
+# Add theoretical normal curve
+x_vals <- seq(2, 15, length.out = 500)
+lines(x_vals, dnorm(x_vals, mean = theoretical_mean, sd = theoretical_se), 
+      col = "blue", lwd = 2)
+
+# Add mean line
+abline(v = theoretical_mean, col = "darkgreen", lty = 2, lwd = 2)
+
+legend("topleft", legend = c("Sample Means", "Theoretical Normal", "Mean"),
+       col = c("coral", "blue", "darkgreen"), 
+       lty = c(NA, 1, 2), lwd = c(NA, 2, 2), 
+       pch = c(15, NA, NA), pt.cex = 2, cex = 0.9)
+
+# Panel 2: Q-Q plot
+qqnorm(sample_means, main = "Q-Q Plot: Are Sample Means Normal?",
+       col = "coral", pch = 16, cex = 0.6)
+qqline(sample_means, col = "blue", lwd = 2)
+
+par(mfrow = c(1, 1))
+```
+
+
 ## Exercise 2
 
 A coffee shop collects customer satisfaction scores on a scale from 1 to 10. The manager believes the average satisfaction score is around 7.5, but wants to estimate it more precisely using confidence intervals.
 
 1.  Generate a sample of n = 20 customer satisfaction scores from a normal distribution with mean = 7.5 and standard deviation = 1.2 (use rnorm()).
+
+```{r}
+n = 20
+n_customer <- rnorm(n, mean = 7.5, sd = 1.2)
+```
+
 2.  Calculate the sample mean and standard deviation.
+
+```{r}
+sample_mean <- mean(n_customer)
+sample_sd <- sd(n_customer)
+```
+
 3.  Construct a 95% confidence interval for the true average satisfaction score using the t-distribution.
+
+```{r}
+df_n <- n-1
+tc <- qt(0.975, df = df_n)
+CI_low <- sample_mean - tc * sample_sd/sqrt(n)
+CI_high <- sample_mean + tc * sample_sd/sqrt(n)
+```
+
 4.  Repeat steps 1-3 100 times to generate 100 different confidence intervals.
+
+```{r}
+n = 20
+Xn = lapply(1:100,function(i) {rnorm(n,mean = 7.5, sd = 1.2)})
+# we compute the sample means
+Xn_m = sapply(Xn,mean)
+# and the sample standard deviations
+Xn_sd = sapply(Xn,sd)
+#
+df = n-1
+tc = qt(0.975,df)
+Xn_l = Xn_m-tc*Xn_sd/sqrt(n) # upper bound of the 95% CI
+Xn_h = Xn_m+tc*Xn_sd/sqrt(n) # lower bound of the 95% CI
+```
+
 5.  Create a plot showing all 100 CIs (similar to the Poisson example in section 2.2). Color the intervals blue if they contain the true mean (7.5) and red if they don't.
+
+```{r,results='hide'}
+col = c('red','blue')
+
+## vector of TRUE/FALSE if the real expectation value lambda is inside the interval
+i.ok =  as.factor(Xn_l < 7.5 & Xn_h > 7.5)
+
+## plot the mean values and the confidence interval
+plot(Xn_m,ylim=c(5,10),pch=20,ylab="",main=paste("Mean values and confidence intervals, N=",n));abline(h=7.5,lty=3);invisible(lapply(1:length(Xn_m), function(i) {
+  points(c(i,i), c(Xn_l[i], Xn_h[i]), type="l", col=col[i.ok[i]], lwd=2)
+}))
+```
+
 6.  Count how many of your 100 intervals contain the true mean. Is it close to 95%?
+```{r}
+sum(i.ok == TRUE)
+```
+
+
