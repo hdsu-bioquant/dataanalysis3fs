@@ -18,13 +18,11 @@ set.seed(123)
 
 In the previous Exercise Sheet we have learnt about distributions and how to use them in R. We have learned about **p-, q-, d- and r- functions**, the normal and the poisson distribution.
 
-
 ------------------------------------------------------------------------
 
 # Introduction and Objectives
 
 In the previous lectures you learnt about different major types of probability distributions like Normal, Binomial, Negative binomial, Student t etc. In this tutorial you will complete your training with distribution by learning more about the central limit theorem and the confidence intervals.
-
 
 # Part 0 : an introductory example
 
@@ -50,8 +48,7 @@ hist(x2)
     
 ```
 
-Each follows a uniform distribution.
-Now plot the distribution of the mean of both variables
+Each follows a uniform distribution. Now plot the distribution of the mean of both variables
 
 ```{r}
 hist(0.5*(x1+x2))
@@ -59,14 +56,11 @@ hist(0.5*(x1+x2))
 
 See? this is no longer a uniform distribution. Can we continue?
 
-> Try adding a third, fourth, etc... variable and doing the same: what do you observe?
-> How can you show that x1 and x2 are independent?
+> Try adding a third, fourth, etc... variable and doing the same: what do you observe? How can you show that x1 and x2 are independent?
 
+# The coffee shop as a simulation object
 
-# The coffee shop as simulation object
-
-Let's take another example with a different starting distribution...
-We will take a coffee shop as an example to illustrate both the central limit theorem and the 95% confidence interval.
+Let's take another example with a different starting distribution... We will take a coffee shop as an example to illustrate both the central limit theorem and the 95% confidence interval.
 
 ------------------------------------------------------------------------
 
@@ -74,7 +68,7 @@ We will take a coffee shop as an example to illustrate both the central limit th
 
 First, we will explore waiting times at a coffee shop. The owner wants to know what the average waiting time is, by computing the average over multiple clients. Every day, he computes the average waiting time over groups of customers with increasing size.
 
-Individual waiting times are **right-skewed** (most customers wait \~5 minutes, but some wait much longer). We'll see how the distribution of **sample means** becomes approximately normal, even though individual waiting times are not normally distributed.
+Individual waiting times are **right-skewed** (most customers wait \~3 minutes, but some wait much longer). We'll see how the distribution of **sample means** becomes approximately normal, even though individual waiting times are not normally distributed.
 
 ------------------------------------------------------------------------
 
@@ -87,12 +81,11 @@ We model individual customer waiting times using a **Gamma distribution**. At th
 The parameter of the Gamma distribution are selected to simulate the following situation:
 
 -   **Mean (μ) = α × β = 6 minutes**
--   **Standard deviation (σ) = √(α × β²) = √6 ≈ 2.45 minutes**
+-   **Standard deviation (σ) = √(α × β²) = √6 ≈ 4.90 minutes**
 
 How does this Gamma distribution look like? How does the distribution of waiting time look like?
 
 *!!! Most of the chunk do not need to be understood as their aim is to produce graphs. Please concentrate on understanding and interpreting the visuals.*
-
 
 ```{r original_distribution}
 # Parameters of the Gamma distribution - NOT important to know or understand
@@ -130,7 +123,7 @@ legend("topright", legend = c("Data", "Mean"),
 
 Now we'll take many samples of **n customers** and compute the **average waiting time** for each sample.
 
-**🔧 CHANGE THIS VALUE TO EXPERIMENT!**
+**CHANGE THIS VALUE TO EXPERIMENT!**
 
 ```{r simulation}
 # ============================================
@@ -149,11 +142,10 @@ sample_means <- replicate(num_days, {
 
 # Theoretical parameters for sampling distribution
 theoretical_mean <- mu
-theoretical_se <- sigma / sqrt(sample_size)
+theoretical_se <- sigma / sqrt(number_clients)
 ```
 
 Now plot the sample means, i.e. the mean waiting time over a group of customers:
-
 
 ```{r, fig.height=10}
 # Create two-panel plot
@@ -162,7 +154,7 @@ par(mfrow = c(2, 1), mar = c(4, 4, 3, 2))
 # Panel 1: Histogram with normal overlay
 hist(sample_means, breaks = 40, freq = FALSE, 
      col = "coral", border = "white",
-     main = paste("Distribution of Sample Means (n =", sample_size, ")"),
+     main = paste("Distribution of Sample Means (n =", number_clients, ")"),
      xlab = "Sample Mean Waiting Time (minutes)", ylab = "Density",
      xlim = c(2, 15))
 
@@ -186,7 +178,6 @@ qqline(sample_means, col = "blue", lwd = 2)
 
 par(mfrow = c(1, 1))
 ```
-
 
 ### Q-Q Plots: Assessing Normality Across Sample Sizes
 
@@ -221,7 +212,7 @@ par(mfrow = c(1, 1))
 **Interpretation:**
 
 -   **n = 2:** Points deviate from the line, especially in the tails (distribution still skewed)
--   **n = 20:** Much better fit to the normal line, slight deviations remain
+-   **n = 10:** Much better fit to the normal line, slight deviations remain
 -   **n = 200:** Nearly perfect alignment with the theoretical normal line!
 
 ------------------------------------------------------------------------
@@ -351,7 +342,7 @@ x_vals <- 25:75
 probs <- dpois(x_vals, lambda = lambda)
 
 barplot(probs, names.arg = x_vals, 
-        col = "skyblue", border = "white",
+        col = "blue", border = "white",
         main = "Distribution of Customer Arrivals (Poisson, λ = 50)",
         xlab = "Number of Customers per 10-minute Window",
         ylab = "Probability",
@@ -416,11 +407,9 @@ It happens `r sum(!as.logical(i.ok))` times, which fits pretty well with the exp
 ### *Think about it and test*
 
 > 1 - Repeat this simulation, but now with samples of $N=24$ (again 100 times); What do you observe?\
-> 2 - How often is the true expectation value outside the CI? Change to 90% CI and check if that works!
-> 3 - Why do some intervals miss the true λ even though we're using a "95% confidence" method?\
+> 2 - How often is the true expectation value outside the CI? Change to 90% CI and check if that works! 3 - Why do some intervals miss the true λ even though we're using a "95% confidence" method?\
 > 4 - Try n = 25 vs n = 100. How much narrower is the CI with n = 100?\
 > 5 - What would happen if we used 99% confidence instead of 95%?
-
 
 # EXERCISE
 
@@ -432,11 +421,9 @@ Repeat the exercise about the Central Limit Theorem, starting now from a **unifo
 
 A coffee shop collects customer satisfaction scores on a scale from 1 to 10. The manager believes the average satisfaction score is around 7.5, but wants to estimate it more precisely using confidence intervals.
 
-1. Generate a sample of n = 20 customer satisfaction scores from a normal distribution with mean = 7.5 and standard deviation = 1.2 (use rnorm()).
-2. Calculate the sample mean and standard deviation.
-3. Construct a 95% confidence interval for the true average satisfaction score using the t-distribution. 
-4. Repeat steps 1-3 100 times to generate 100 different confidence intervals.
-5. Create a plot showing all 100 CIs (similar to the Poisson example in section 2.2). Color the intervals blue if they contain the true mean (7.5) and red if they don't.
-6. Count how many of your 100 intervals contain the true mean. Is it close to 95%?
-
-
+1.  Generate a sample of n = 20 customer satisfaction scores from a normal distribution with mean = 7.5 and standard deviation = 1.2 (use rnorm()).
+2.  Calculate the sample mean and standard deviation.
+3.  Construct a 95% confidence interval for the true average satisfaction score using the t-distribution.
+4.  Repeat steps 1-3 100 times to generate 100 different confidence intervals.
+5.  Create a plot showing all 100 CIs (similar to the Poisson example in section 2.2). Color the intervals blue if they contain the true mean (7.5) and red if they don't.
+6.  Count how many of your 100 intervals contain the true mean. Is it close to 95%?
