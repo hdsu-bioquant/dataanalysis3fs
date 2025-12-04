@@ -10,15 +10,15 @@ output:
 We will work with a dataset of tumor expression data of patients with acute myeloid leukemia (AML) or acute lymphocytic leukemia (ALL):
 
 ```{r, echo = FALSE}
-all.aml = read.delim('http://bioinfo.ipmb.uni-heidelberg.de/crg/datascience3fs/practicals/data/all.aml.cleaned.csv',header=TRUE)
-all.aml.anno = read.delim("http://bioinfo.ipmb.uni-heidelberg.de/crg/datascience3fs/practicals/data/all.aml.anno.cleaned.csv", header=TRUE)
+all.aml = read.delim('https://www.dropbox.com/scl/fi/q4rbpl3un6oqbbwoxe1qw/all.aml.cleaned.csv?rlkey=igwbna22d6hpdmw3os79zoy7z&dl=1',header=TRUE)
+all.aml.anno = readRDS(url("https://www.dropbox.com/scl/fi/0lqjh3jcskki2bb8hxwj6/all.aml.anno.rds?rlkey=cijsx39kr9gx9bjl6wzpmkgnz&dl=1"))
 #
 # we convert all.aml into a data matrix rather than a data.frame
 all.aml = data.matrix(all.aml)
 i.all = which(all.aml.anno$ALL.AML=='AML') ## we extract the row numbers of the ALL patients
 ```
 
-# 1. Introduction and Objectives
+# 0. Introduction and Objectives
 
 In the previous Exercise Sheet we have looked at **hypothesis testing**, learned how the process works and then learned about the t-test function.
 
@@ -26,7 +26,7 @@ In this Exercise Sheet you will learn more about hypothesis testing, specificall
 
 You should be familiar with both these problems from the lecture.
 
-# 2. Non-parametric test
+# 1. Non-parametric test
 
 What if the data is not normally distributed? In that case, we are no supposed to use the t-test for testing differences between mean values! Let us us see an example.
 
@@ -59,11 +59,10 @@ The p-values are very different!! So is the difference of expression between ALL
 
 Here, we **cannot** trust the t-test due to the non-normality of the data! Hence, the correct p-value is the one from the Wilcoxon test.
 
-We will discuss in the **Going further...** section what it means that we cannot trust the p-value of the t-test.
+> Check another random gene!
 
-------------------------------------------------------------------------
 
-# 3. Proportion tests
+# 2. Proportion tests
 
 The t-test and wilcoxon tests are **tests of the mean**; we are comparing the means of two samples and looking for significant differences.
 
@@ -75,7 +74,7 @@ But there are other hypothesis that one might want to test, related to the relat
 The proportion test (Fisher Extact Test or chi2 test) are used to investigate the relationship between 2 categorical variables, starting from a **contingency table**. We will use a dataset with clinical informations about breast cancer patients.
 
 ```{r}
-dat.brca = read.delim('http://bioinfo.ipmb.uni-heidelberg.de/crg/datascience3fs/practicals/data/gbsg_ba_ca.dat', stringsAsFactors = FALSE)
+dat.brca = read.delim(url('https://www.dropbox.com/scl/fi/gy2jnj7o7p1398azkw6b1/gbsg_ba_ca.dat?rlkey=a0j003a1ehtt68usuyd32ta56&dl=1'), stringsAsFactors = FALSE)
 ```
 
 Check which variables in this dataset are categorical/ordinal/numerical. We can now check if there is a significant relationship between some variables. For example, we can verify if the choice of treatment with tamoxifen (variable `hormon`) is related to the pre-/post-monopausal status (variable `meno`)
@@ -100,6 +99,7 @@ OR
 
 > How would the odds-ratio look like if you would transpose the matrix?
 
+
 Now we can run the one-sided Fisher Exact Test (FET). The H0/H1 hypothesis are:
 
 -   H0: the odds-ratio is not significantly larger than one
@@ -113,13 +113,12 @@ tab = table(dat.brca$meno,dat.brca$hormon)
 fisher.test(tab,alternative = 'greater')
 ```
 
-Check if your computation of the odds-ratio is right! Compute also the two w-sided test:
+Check if your computation of the odds-ratio is right! 
 
-> Formulate the H0/H1 hypothesis!
 
-```{r}
-fisher.test(tab)
-```
+> Run the two-sided Fisher test; first, formulate the hypothesis!
+> Check the p-values: what do you observe?
+
 
 We can also use the **chi-square test** to answer the same question. The Chi-square test compares the **observed** number of occurences in the contingency table to the **expected** number of occurences if there was no relationship between the variables.
 
@@ -129,6 +128,8 @@ We can also use the **chi-square test** to answer the same question. The Chi-squ
 ```{r}
 chisq.test(tab)
 ```
+
+> Is this a one-sided or 2-sided test?
 
 Now we want to verify the impact of age on the grade of the tumor. We categorize the patients in under and over 40 year groups, and perform a chi-squared test:
 
@@ -159,7 +160,7 @@ tab.exp
 
 > How would you compute the chi-square test statistic using the `tab` and `tab.exp` tables?
 
-# 4. Power of a test
+# 3. Power of a test
 
 We have seen that $\alpha$ controls the **False-positive rate**. False positive means seing an difference that is not there...
 
@@ -183,7 +184,7 @@ n = 5              # number of replicate measurements per patient
 alpha = 0.05       # significance level
 ```
 
-The **null hypothesis H₀** is: *"The patient is healthy (does not have the condition)"*
+The **null hypothesis H0** is: *"The patient is healthy (does not have the condition)"*
 
 Here are the average biomarker measurements from your first 5 patients today:
 
@@ -204,9 +205,7 @@ plot(x, y, type='l', lwd=3, col='blue',
      main=paste0('Distribution of mean biomarker levels in healthy individuals (n=',n,' measurements)'))
 ```
 
-**Note the** $\sqrt{n}$ **factor in the standard deviation!** This is the standard error of the mean (SEM).
-
-## When would you reject H₀ and diagnose the patient as having the condition?
+## When would you reject H0 and diagnose the patient as having the condition?
 
 Using a one-sided test with $\alpha=0.05$:
 
@@ -215,7 +214,7 @@ rejection_threshold = qnorm(p = alpha, mean = mu_healthy, sd = sigma/sqrt(n), lo
 rejection_threshold
 ```
 
-If a patient's average biomarker level is **above** `r round(rejection_threshold, 2)` μg/L, you would reject H₀ and diagnose them with the condition (**positive** diagnosis). Otherwise, you would not reject H₀ (**negative** diagnosis).
+If a patient's average biomarker level is **above** this value, you would reject H0 and diagnose them with the condition (**positive** diagnosis). Otherwise, you would not reject H0 (**negative** diagnosis).
 
 ```{r}
 plot(x, y, type='l', lwd=3, col='blue',
@@ -236,7 +235,7 @@ Based on this threshold, patient 2 would be diagnosed with the condition, while 
 
 ## The problem: False negatives in diseased patients
 
-**However**, it turns out that all 5 of these patients actually **DO have the condition**! They were referred from a specialist clinic that had already identified them through genetic testing. So H₀ is **false** for **all** of these patients.
+**However**, it turns out that all 5 of these patients actually **DO have the condition**! They were referred from a specialist clinic that had already identified them through genetic testing. So H0 is **false** for **all** of these patients.
 
 This means you failed to detect the disease in 4 out of 5 patients: **80% false-negatives**!
 
@@ -260,19 +259,19 @@ patient_means = sapply(1:1000, function(i) {
   mean(measurements)
 })
 
-### Diagnostic threshold for H₀: "patient is healthy"
+### Diagnostic threshold for H0: "patient is healthy"
 rejection_threshold = qnorm(alpha, mean = mu_healthy, sd = sigma/sqrt(n), lower.tail = FALSE)
 
 ### For how many patients did we FAIL to detect the disease?
-### H₀ is rejected (disease detected) if mean is ABOVE threshold
-### H₀ is NOT rejected (disease missed) if mean is BELOW threshold
+### H0 is rejected (disease detected) if mean is ABOVE threshold
+### H0 is NOT rejected (disease missed) if mean is BELOW threshold
 beta = sum(patient_means < rejection_threshold) / length(patient_means)
 
 cat(sprintf("False-negative rate (β) = %.1f%%\n", beta*100))
 cat(sprintf("Test power/sensitivity (1-β) = %.1f%%\n", (1-beta)*100))
 ```
 
-This means our diagnostic test only detects the disease in about `r round((1-beta)*100, 0)`% of patients who actually have it. This is a **very poor sensitivity** for a diagnostic test!
+This means our diagnostic test only detects the disease in about 43 % of patients who actually have it. This is a **very poor sensitivity** for a diagnostic test!
 
 ## Visualizing Type II errors
 
@@ -304,6 +303,17 @@ legend('topright',
 
 The **purple shaded area** represents diseased patients whose biomarker levels fall below the threshold—these are the **false-negatives** that we fail to diagnose.
 
+
+> How does the false-negative rate β change with increasing number of measurements per patient (i.e., increasing n)? Try n = 5, 10, 20, 50.
+
+> Try to find a combination of:
+> - Effect size (difference between μ_healthy and μ_disease)
+> - Significance level (α)
+> - Number of measurements (n)
+> 
+> ...so that the test has at least 80% power (β < 20%) while maintaining α = 0.05.
+
+
 ------------------------------------------------------------------------
 
 # Exercises
@@ -311,11 +321,8 @@ The **purple shaded area** represents diseased patients whose biomarker levels f
 #### Exercise 1
 
 1.  Check the expression of a random gene in the ALL/AML dataset. Are the values normally distributed?
-
 2.  Run both tests on this gene. Is there a difference between p-values? What did you expect?
-
 3.  Write a code that runs both tests on every gene and registers each p-value in a vector.
-
 4.  Do a scatter plot of -log10(Pvalue of t-test) vs. -log10(Pvalue of wilcoxon test); are there strong deviations?
 
 #### Exercise 2
