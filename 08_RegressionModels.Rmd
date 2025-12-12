@@ -255,9 +255,16 @@ plot(RMSE[1,], pch = 19, col = "orange", xlab = "Iteration", ylab = "RMSE values
 ```
 
 
+## EXERCISE
+
+Exercise 1
+
+* Take the multiple regression model, and try to remove step by step unimportant variables
+* Can you identify an optimal set of variables? Which criterion would you choose for that?
+
 ------------------------------------------------------------------------
 
-# Going further
+## Going further
 
 ### Using PCA to determine independent variables
 
